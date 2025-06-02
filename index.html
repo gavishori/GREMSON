@@ -349,27 +349,49 @@
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             }
             td {
-                border: 1px solid #cccccc; /* Ensure borders are visible for cells on small screens */
-                position: relative;
-                padding-right: 50%;
-                text-align: left;
+                border: 1px solid #cccccc;
+                padding: 10px 15px; /* פאדינג אחיד או מותאם אישית */
+                text-align: right; /* יישור לימין עבור RTL */
+                display: flex; /* הפוך את התא לקונטיינר גמיש (flex container) */
+                flex-direction: column; /* ערום את התוכן בעמודה */
+                align-items: flex-start; /* יישר את התוכן לשמאל בתוך התא */
+                position: relative; /* החזר position: relative; כדי למקם את ה-cell-label אם צריך */
+                overflow: hidden; /* למנוע גלישה של תוכן ארוך מחוץ לתא */
             }
+
             td::before {
                 content: attr(data-label);
-                position: absolute;
-                right: 6px;
-                width: 45%;
-                padding-left: 10px;
                 font-weight: bold;
-                text-align: right;
+                text-align: right; /* יישור לימין לתווית עצמה */
+                color: #555;
+                margin-bottom: 5px; /* רווח קטן מתחת לתווית */
+                display: block; /* ודא שהתווית תופסת שורה משלה */
+                width: 100%; /* תן לה 100% רוחב כדי שלא תתנגש עם תוכן אחר */
             }
-            .input-with-symbol-container, .display-currency-cell { /* Apply to both input and display types */
-                width: 100%; /* Ensure container fills the cell on small screens */
-                justify-content: center; /* Center content on small screens */
+
+            .input-with-symbol-container, .display-currency-cell {
+                width: 100%; /* ודא שזה ממלא את הרוחב הזמין */
+                justify-content: flex-end; /* יישר את התוכן (מספר + סמל) לימין */
             }
-            .editable-price-input, .editable-percentage-input, .investment-amount-input, .loan-amount-input, .loan-interest-input { /* Apply to all input types */
-                width: auto; /* Allow flex-grow to manage width */
+
+            .editable-price-input, .editable-percentage-input,
+            .investment-amount-input, .loan-amount-input, .loan-interest-input {
+                width: 100%; /* ודא שהאינפוטים תופסים את כל הרוחב הזמין בתוך הקונטיינר שלהם */
+                box-sizing: border-box; /* חשוב כדי שהפאדינג לא יגרום לגלישה */
+                text-align: right; /* ודא שגם בתוך האינפוט הטקסט מיושר לימין */
             }
+
+            /* תיקון עבור ה-cell-label הקטנים (A1, B1, C1 וכו') */
+            .cell-label {
+                position: absolute; /* מקם אותם באופן אבסולוטי */
+                left: 5px; /* 5 פיקסלים מהשמאל של התא */
+                bottom: 5px; /* 5 פיקסלים מהתחתית של התא */
+                font-size: 0.7em;
+                color: #888;
+                z-index: 10; /* ודא שהם מעל אלמנטים אחרים אם יש חפיפה */
+                direction: ltr; /* החזר את זה רק עבור התווית הספציפית הזו */
+            }
+
             /* Apply light red background to specific cells on small screens */
             td[data-label="סכום הרווח"],
             td[data-label="השקעה"],
@@ -406,18 +428,22 @@
             }
             .investment-table td, .loan-details-table td {
                 border: 1px solid #cccccc;
+                padding: 10px 15px; /* פאדינג אחיד או מותאם אישית */
+                text-align: right;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
                 position: relative;
-                padding-right: 50%;
-                text-align: left;
+                overflow: hidden;
             }
-            .investment-table td::before {
+            .investment-table td::before, .loan-details-table td::before {
                 content: attr(data-label);
-                position: absolute;
-                right: 6px;
-                width: 45%;
-                padding-left: 10px;
                 font-weight: bold;
                 text-align: right;
+                color: #555;
+                margin-bottom: 5px;
+                display: block;
+                width: 100%;
             }
         }
     </style>
@@ -888,13 +914,9 @@
         .cell-label {
             font-size: 0.7em;
             color: #888;
-            margin-left: 5px;
-            float: left; /* Align to the left for RTL */
-            direction: ltr; /* Ensure LTR direction for cell labels */
+            /* הוסר float: left; ו-direction: ltr; מפה, הועברו לבלוק המדיה */
             font-weight: normal;
         }
     </style>
 </body>
 </html>
-
-
