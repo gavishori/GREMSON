@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GREMSON - מחשבון עסקה</title>
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif; /* Using Inter font as per instructions */
+            margin: 20px;
+            text-align: right; /* Align text to the right for RTL */
+            background-color: #f4f7f6; /* Light background for better aesthetics */
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50; /* Darker color for heading */
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db; /* Blue underline */
+        }
+        .subheading-box { /* Style for the subheading box */
+            background-color: #ecf0f1; /* Light grey background for the box */
+            border: 1px solid #bdc3c7; /* Grey border */
+            padding: 10px 15px;
+            border-radius: 8px; /* Rounded corners */
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #2c3e50;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Subtle shadow */
+            display: inline-block; /* Make it an inline block to wrap content and align */
+            margin-top: 20px;
+            margin-bottom: 15px;
+            float: right; /* Align to the right */
+            clear: both; /* Clear floats above it */
+        }
+        .subheading-box h2 { /* Style for the h2 inside the box */
+            color: #34495e; /* Slightly lighter color for subheading */
+            margin: 0; /* Remove default margin from h2 inside the box */
+            text-align: right; /* Align text to the right within the box */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse; /* Ensures borders are collapsed for a clean grid */
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for table */
+            border-radius: 8px; /* Rounded corners for the table container */
+            overflow: hidden; /* Ensures rounded corners apply to content */
+        }
+        th, td {
+            border: 1px solid #cccccc; /* Changed to a slightly darker border for clearer grid lines */
+            padding: 12px 15px;
+            text-align: right; /* Align text to the right for RTL */
+        }
+        th {
+            background-color: #3498db; /* Blue header background */
+            color: white; /* White text for headers */
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9; /* Zebra striping for rows */
+        }
+        tr:hover {
+            background-color: #eaf2f8; /* Hover effect for rows */
+        }
+        .dollar-rate-container {
+            display: flex; /* Use flexbox for horizontal layout */
+            justify-content: flex-end; /* Align items to the right for RTL */
+            margin-top: 30px;
+            margin-bottom: 15px; /* Add some margin below for the new box */
+            clear: both; /* Ensure it clears previous floats */
+            align-items: center; /* Vertically align items in the container */
+            gap: 10px; /* Space between dollar rate box and reset button */
+        }
+        .dollar-rate-box {
+            background-color: #ecf0f1; /* Light grey background for boxes */
+            border: 1px solid #bdc3c7; /* Grey border */
+            padding: 15px 20px;
+            border-radius: 8px; /* Rounded corners */
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #2c3e50;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Subtle shadow */
+            display: flex; /* Use flexbox for content inside the box */
+            align-items: center; /* Vertically align items */
+            gap: 10px; /* Space between label and input */
+        }
+        .dollar-rate-box input[type="number"] {
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            width: 100px; /* Adjust width as needed */
+            text-align: left; /* Align input text to left */
+        }
+        /* Style for the container holding the input and currency/percentage symbol */
+        .input-with-symbol-container { /* More generic name */
+            display: flex;
+            align-items: center;
+            justify-content: flex-end; /* Align to the right for RTL */
+            width: 100%; /* Ensure the container fills the cell by default */
+        }
+        /* Style for editable price input fields */
+        .editable-price-input {
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            flex-grow: 1;
+            box-sizing: border-box;
+            background-color: #e0ffe0; /* Light green background */
+            text-align: right; /* Align input text to right for RTL */
+        }
+        /* Style for the currency/percentage symbol span */
+        .symbol-left { /* Position symbol to the left of the input (for RTL) */
+            margin-right: 5px;
+            color: #555;
+            flex-shrink: 0;
+        }
+        /* Style for the light red background on profit cells */
+        .profit-in-dollars-cell {
+            background-color: #ffe0e0; /* Light red background */
+        }
+        /* Style for light red background on equity cells */
+        .equity-cell {
+            background-color: #ffe0e0; /* Light red background */
+        }
+        /* Style for editable percentage input fields */
+        .editable-percentage-input {
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #e0ffe0; /* Light green background directly on the input */
+            text-align: right; /* Align input text to right for RTL */
+        }
+        /* Style for display-only currency cells */
+        .display-currency-cell {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end; /* Align to the right for RTL */
+            width: 100%;
+            height: 100%;
+        }
+        .additional-right-box { /* Style for the new box */
+            background-color: #ecf0f1; /* Light grey background for the box */
+            border: 1px solid #bdc3c7; /* Grey border */
+            padding: 10px 15px;
+            border-radius: 8px; /* Rounded corners */
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #2c3e50;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Subtle shadow */
+            display: inline-block; /* Make it an inline block to wrap content and align */
+            margin-top: 15px; /* Space from the dollar rate box */
+            float: right; /* Align to the right */
+            clear: both; /* Clear floats above it */
+        }
+        .additional-right-box h3 { /* Style for content inside the new box */
+            color: #34495e;
+            margin: 0;
+            text-align: right;
+        }
+        /* Container for the two side-by-side tables */
+        .tables-row-container {
+            display: flex;
+            flex-wrap: wrap; /* Allow tables to wrap on smaller screens */
+            justify-content: flex-end; /* Align to the right for RTL */
+            gap: 20px; /* Space between tables */
+            margin-top: 20px;
+            clear: both; /* Clear any preceding floats */
+        }
+        /* Investment table styling */
+        .investment-table {
+            flex: 1; /* Allow table to grow and shrink, taking equal space */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for table */
+            border-radius: 8px; /* Rounded corners for the table container */
+            overflow: hidden; /* Ensures rounded corners apply to content */
+            border-collapse: collapse;
+        }
+        .investment-table th, .investment-table td {
+            white-space: nowrap; /* Prevent text wrapping in cells */
+            border: 1px solid #cccccc;
+            padding: 12px 15px;
+            text-align: right;
+        }
+        .investment-table th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        .investment-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .investment-table tr:hover {
+            background-color: #eaf2f8;
+        }
+        /* Style for the investment amount input fields (similar to editable-price-input) */
+        .investment-amount-input {
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            flex-grow: 1;
+            box-sizing: border-box;
+            background-color: #e0ffe0; /* Light green background */
+            text-align: right;
+        }
+        /* Specific styling for the input-with-symbol-container within the "סה&quot;כ $" column of investment table */
+        .investment-table td[data-label="סה&quot;כ $"] .input-with-symbol-container {
+            width: auto; /* Allow container to shrink to content */
+            display: inline-flex; /* Make it inline-flex to shrink-wrap its content */
+            /* The parent td's text-align: right will align this inline-flex container to the right */
+        }
+        /* Loan details table styling */
+        .loan-details-table {
+            flex: 1; /* Allow table to grow and shrink, taking equal space */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            border-radius: 8px; /* Rounded corners */
+            overflow: hidden; /* Ensures rounded corners apply to content */
+            border-collapse: collapse;
+        }
+        .loan-details-table th, .loan-details-table td {
+            border: 1px solid #cccccc;
+            padding: 12px 15px;
+            text-align: right;
+            white-space: nowrap;
+        }
+        .loan-details-table th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        .loan-details-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .loan-details-table tr:hover {
+            background-color: #eaf2f8;
+        }
+        /* Specific styling for the loan amount input */
+        .loan-amount-input {
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            flex-grow: 1;
+            box-sizing: border-box;
+            background-color: #e0ffe0; /* Light green background */
+            text-align: right;
+        }
+        /* Specific styling for the interest rate input */
+        .loan-interest-input {
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            flex-grow: 1;
+            box-sizing: border-box;
+            background-color: #e0ffe0; /* Light green background */
+            text-align: right;
+        }
+        /* Specific styling for the input-with-symbol-container within the "סכום ההלוואה בפועל" column of loan table */
+        .loan-details-table td[data-label="סכום ההלוואה בפועל"] .input-with-symbol-container {
+            width: auto; /* Allow container to shrink to content */
+            display: inline-flex; /* Make it inline-flex to shrink-wrap its content */
+            /* The parent td's text-align: right will align this inline-flex container to the right */
+        }
+        /* Specific styling for the input-with-symbol-container within the "אחוז ריבית" column of loan table */
+        .loan-details-table td[data-label="אחוז ריבית"] .input-with-symbol-container {
+            width: auto; /* Allow container to shrink to content */
+            display: inline-flex; /* Make it inline-flex to shrink-wrap its content */
+            /* The parent td's text-align: right will align this inline-flex container to the right */
+        }
+        /* Hide spin buttons for number inputs */
+        /* Removed .no-spinners class from here to re-enable spinners */
+        /* New summary boxes styling */
+        .summary-info-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start; /* Align to the left for RTL */
+            gap: 20px;
+            margin-top: 20px;
+            clear: both;
+        }
+        .summary-value-box {
+            background-color: #ecf0f1; /* Default light grey */
+            border: 1px solid #bdc3c7;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #2c3e50;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end; /* Align content to the right within the box */
+            flex: 1; /* Allow boxes to grow and shrink */
+            min-width: 120px; /* Minimum width for each box */
+        }
+        .summary-value-box.red-bg {
+            background-color: #ffe0e0; /* Light red background */
+        }
+        .summary-value-box span {
+            white-space: nowrap; /* Prevent text/number wrapping */
+        }
+        .reset-button {
+            padding: 10px 20px;
+            background-color: #f44336; /* Red color for reset button */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+        .reset-button:hover {
+            background-color: #d32f2f; /* Darker red on hover */
+        }
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .dollar-rate-container {
+                flex-direction: column; /* Stack columns on small screens */
+                align-items: center; /* Center items when stacked */
+                gap: 10px;
+            }
+            .dollar-rate-box {
+                width: 90%; /* Make boxes wider on small screens */
+                text-align: center;
+                flex-direction: column; /* Stack label and input vertically on small screens */
+            }
+            .dollar-rate-box input[type="number"] {
+                width: 80%; /* Adjust input width for small screens */
+            }
+            table {
+                display: block; /* Ensure table maintains block display */
+            }
+            thead {
+                display: none; /* Hide table header on small screens */
+            }
+            tr {
+                margin-bottom: 15px;
+                display: block;
+                border: 1px solid #cccccc; /* Consistent border for rows on small screens */
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+            td {
+                border: 1px solid #cccccc; /* Ensure borders are visible for cells on small screens */
+                position: relative;
+                padding-right: 50%;
+                text-align: left;
+            }
+            td::before {
+                content: attr(data-label);
+                position: absolute;
+                right: 6px;
+                width: 45%;
+                padding-left: 10px;
+                font-weight: bold;
+                text-align: right;
+            }
+            .input-with-symbol-container, .display-currency-cell { /* Apply to both input and display types */
+                width: 100%; /* Ensure container fills the cell on small screens */
+                justify-content: center; /* Center content on small screens */
+            }
+            .editable-price-input, .editable-percentage-input, .investment-amount-input, .loan-amount-input, .loan-interest-input { /* Apply to all input types */
+                width: auto; /* Allow flex-grow to manage width */
+            }
+            /* Apply light red background to specific cells on small screens */
+            td[data-label="סכום הרווח"],
+            td[data-label="השקעה"],
+            tr:nth-child(2) td[data-label="מחיר מכירה"],
+            tr:nth-child(1) td[data-label="אחוז הרווח"] {
+                background-color: #ffe0e0;
+            }
+            /* Removed specific green background for td in responsive, as input handles it */
+            .subheading-box, .additional-right-box, .tables-row-container, .summary-info-row { /* Adjust boxes and table container for small screens */
+                width: 90%;
+                float: none; /* Remove float */
+                text-align: center;
+                margin-left: auto;
+                margin-right: auto;
+                flex-direction: column; /* Stack items vertically */
+                gap: 15px; /* Space between stacked items */
+            }
+            .subheading-box h2, .additional-right-box h3 {
+                text-align: center;
+            }
+            .investment-table, .loan-details-table, .summary-value-box { /* Ensure tables/boxes take full width when stacked */
+                width: 100%;
+                min-width: unset; /* Remove min-width for stacking */
+            }
+            .investment-table thead, .loan-details-table thead {
+                display: none; /* Hide table header on small screens */
+            }
+            .investment-table tr, .loan-details-table tr {
+                margin-bottom: 15px;
+                display: block;
+                border: 1px solid #cccccc;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+            .investment-table td, .loan-details-table td {
+                border: 1px solid #cccccc;
+                position: relative;
+                padding-right: 50%;
+                text-align: left;
+            }
+            .investment-table td::before {
+                content: attr(data-label);
+                position: absolute;
+                right: 6px;
+                width: 45%;
+                padding-left: 10px;
+                font-weight: bold;
+                text-align: right;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>GREMSON - מחשבון עסקה</h1>
+    <div class="subheading-box">
+        <h2>חישוב כדאיות</h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>השקעה</th>
+                <th>מחיר מכירה</th>
+                <th>סכום הרווח</th>
+                <th>אחוז הרווח</th>
+                <th>תיאור</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td data-label="השקעה" class="equity-cell">
+                    <span class="cell-label">A1</span><span id="a1Value">100,000</span>
+                </td>
+                <td data-label="מחיר מכירה">
+                    <div class="input-with-symbol-container">
+                        <input type="number" class="editable-price-input" id="b1Input" value="120000" step="5000">
+                        <span class="symbol-left">$</span>
+                    </div>
+                    <span class="cell-label">B1</span>
+                </td>
+                <td data-label="סכום הרווח" class="profit-in-dollars-cell">
+                    <div class="display-currency-cell">
+                        <span id="c1Value">20,000</span>
+                        <span class="symbol-left">$</span>
+                    </div>
+                    <span class="cell-label">C1</span>
+                </td>
+                <td data-label="אחוז הרווח" class="profit-in-dollars-cell">
+                    <div class="input-with-symbol-container">
+                        <span id="d1Value">20</span>
+                        <span class="symbol-left">%</span>
+                    </div>
+                    <span class="cell-label">D1</span>
+                </td>
+                <td data-label="תיאור">אחוז הרווח לפי מחיר מכירה / השקעה</td>
+            </tr>
+            <tr>
+                <td data-label="השקעה" class="equity-cell">
+                    <span class="cell-label">A2</span><span id="a2Value">50,000</span>
+                </td>
+                <td data-label="מחיר מכירה" class="profit-in-dollars-cell">
+                    <span class="cell-label">B2</span><span id="b2Value">65,000</span>
+                </td>
+                <td data-label="סכום הרווח" class="profit-in-dollars-cell">
+                    <div class="display-currency-cell">
+                        <span id="c2Value">15,000</span>
+                        <span class="symbol-left">$</span>
+                    </div>
+                    <span class="cell-label">C2</span>
+                </td>
+                <td data-label="אחוז הרווח">
+                    <div class="input-with-symbol-container">
+                        <input type="number" class="editable-percentage-input" id="d2Input" value="30" step="1">
+                        <span class="symbol-left">%</span>
+                    </div>
+                    <span class="cell-label">D2</span>
+                </td>
+                <td data-label="תיאור">כמה צריך להיות מחיר המכירה לפי אחוז הרווח הנדרש בהתאם להשקעה</td>
+            </tr>
+            <tr>
+                <td data-label="השקעה" class="equity-cell">
+                    <span class="cell-label">A3</span><span id="a3Value"></span>
+                </td>
+                <td data-label="מחיר מכירה">
+                    <div class="input-with-symbol-container">
+                        <input type="number" class="editable-price-input" id="b3Input" step="5000">
+                        <span class="symbol-left">$</span>
+                    </div>
+                    <span class="cell-label">B3</span>
+                </td>
+                <td data-label="סכום הרווח" class="profit-in-dollars-cell">
+                    <div class="display-currency-cell">
+                        <span id="c3Value"></span>
+                        <span class="symbol-left">$</span>
+                    </div>
+                    <span class="cell-label">C3</span>
+                </td>
+                <td data-label="אחוז הרווח">
+                    <div class="input-with-symbol-container">
+                        <input type="number" class="editable-percentage-input" id="d3Input" step="1">
+                        <span class="symbol-left">%</span>
+                    </div>
+                    <span class="cell-label">D3</span>
+                </td>
+                <td data-label="תיאור">כמה צריכה להיות ההשקעה לפי אחוז הרווח הנדרש בהתאם למכירה</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="dollar-rate-container">
+        <div class="dollar-rate-box">
+            <span>שער הדולר:</span>
+            <input type="number" id="dollarRateInput" placeholder="הזן ערך" step="0.01">
+            <span class="cell-label">E1</span>
+        </div>
+        <button id="resetButton" class="reset-button">איפוס</button>
+    </div>
+    <div class="additional-right-box">
+        <h3>מימון</h3>
+    </div>
+    <div class="tables-row-container">
+        <table class="investment-table">
+            <thead>
+                <tr>
+                    <th>השקעה כספית</th>
+                    <th>סה"כ $</th>
+                    <th>אחוז ההשקעה</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td data-label="השקעה כספית">הון עצמי</td>
+                    <td data-label="סה&quot;כ $">
+                        <div class="input-with-symbol-container investment-total-dollars-input">
+                            <input type="number" class="investment-amount-input" id="equityInvestmentInput" step="5000">
+                            <span class="symbol-left">$</span>
+                        </div>
+                        <span class="cell-label">F1</span>
+                    </td>
+                    <td data-label="אחוז ההשקעה" class="profit-in-dollars-cell">
+                        <div class="display-currency-cell">
+                            <span></span>
+                            <span class="symbol-left">%</span>
+                        </div>
+                        <span class="cell-label">G1</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td data-label="השקעה כספית">הלוואה</td>
+                    <td data-label="סה&quot;כ $" class="profit-in-dollars-cell">
+                        <div class="display-currency-cell">
+                            <span class="cell-label">F2</span>
+                            <span id="loanInvestmentDisplay"></span> <span class="symbol-left">$</span>
+                        </div>
+                    </td>
+                    <td data-label="אחוז ההשקעה" class="profit-in-dollars-cell">
+                        <div class="display-currency-cell">
+                            <span></span>
+                            <span class="symbol-left">%</span>
+                        </div>
+                        <span class="cell-label">G2</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table class="loan-details-table">
+            <thead>
+                <tr>
+                    <th>פרטי הלוואה</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td data-label="סכום ההלוואה">סכום ההלוואה</td>
+                    <td data-label="סכום ההלוואה בפועל">
+                        <div class="input-with-symbol-container loan-amount-input-container">
+                            <input type="number" class="loan-amount-input" id="loanAmountActualInput" value="10000" step="5000">
+                            <span class="symbol-left">$</span>
+                        </div>
+                        <span class="cell-label">H1</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td data-label="ריבית">ריבית ישרה ולא ריבית דריבית</td>
+                    <td data-label="אחוז ריבית">
+                        <div class="input-with-symbol-container loan-interest-input-container">
+                            <input type="number" class="loan-interest-input" id="loanInterestRateInput" value="10" step="1">
+                            <span class="symbol-left">%</span>
+                        </div>
+                        <span class="cell-label">H2</span>
+                    </td>
+                </tr>
+                <tr class="profit-in-dollars-cell">
+                    <td data-label="השקעה כספית">אחוז הרווח על ההשקעה</td>
+                    <td data-label="סה&quot;כ $">
+                        <div class="display-currency-cell">
+                            <span id="h3Value"></span>
+                            <span class="symbol-left">%</span> </div>
+                        <span class="cell-label">H3</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get references to all input elements
+            const dollarRateInput = document.getElementById('dollarRateInput');
+            const b1Input = document.getElementById('b1Input');
+            const d2Input = document.getElementById('d2Input');
+            const equityInvestmentInput = document.getElementById('equityInvestmentInput');
+            const loanAmountActualInput = document.getElementById('loanAmountActualInput');
+            const loanInterestRateInput = document.getElementById('loanInterestRateInput');
+            const b3Input = document.getElementById('b3Input'); // B3 input
+            const d3Input = document.getElementById('d3Input'); // D3 input
+            const resetButton = document.getElementById('resetButton'); // Reset button
+
+            // Get references to display elements
+            const a1ValueSpan = document.getElementById('a1Value');
+            const a2ValueSpan = document.getElementById('a2Value');
+            const c1ValueSpan = document.getElementById('c1Value');
+            const d1ValueSpan = document.getElementById('d1Value');
+            const b2ValueSpan = document.getElementById('b2Value');
+            const c2ValueSpan = document.getElementById('c2Value');
+            const a3ValueSpan = document.getElementById('a3Value'); // A3 display span
+            const c3ValueSpan = document.getElementById('c3Value'); // C3 display span
+            const loanInvestmentDisplay = document.getElementById('loanInvestmentDisplay');
+            const h3ValueSpan = document.getElementById('h3Value'); // H3 display span
+
+            const inputElements = [
+                dollarRateInput, b1Input, d2Input,
+                equityInvestmentInput, loanAmountActualInput, loanInterestRateInput,
+                b3Input, d3Input // Add new inputs to the list for saving/loading
+            ];
+
+            /**
+             * Formats a number with thousands separators for Hebrew locale.
+             * @param {number} value - The number to format.
+             * @param {number} [decimalPlaces=0] - The number of decimal places to show. Defaults to 0.
+             * @returns {string} The formatted string.
+             */
+            function formatNumber(value, decimalPlaces = 0) {
+                return value.toLocaleString('he-IL', {
+                    minimumFractionDigits: decimalPlaces, // Set minimum based on parameter
+                    maximumFractionDigits: decimalPlaces  // Set maximum based on parameter
+                });
+            }
+
+            /**
+             * Saves the value of an input field to localStorage.
+             * @param {HTMLInputElement} inputElement - The input element to save.
+             */
+            function saveInputValue(inputElement) {
+                localStorage.setItem(inputElement.id, inputElement.value);
+            }
+
+            /**
+             * Loads the value for an input field from localStorage.
+             * If a value exists, it sets the input's value.
+             * Also ensures the loaded value is not negative for specific inputs.
+             * @param {HTMLInputElement} inputElement - The input element to load value for.
+             * @param {string} defaultValue - The default value to use if nothing is in localStorage.
+             */
+            function loadInputValue(inputElement, defaultValue) {
+                const savedValue = localStorage.getItem(inputElement.id);
+                if (savedValue !== null) {
+                    inputElement.value = savedValue;
+                } else {
+                    inputElement.value = defaultValue;
+                }
+                // Ensure non-negative for loan inputs and percentages
+                if (inputElement === loanAmountActualInput || inputElement === loanInterestRateInput || inputElement === d3Input) {
+                    if (parseFloat(inputElement.value) < 0) {
+                        inputElement.value = '0';
+                    }
+                }
+            }
+
+            /**
+             * Validates and updates the value of an input field, ensuring it's non-negative.
+             * @param {HTMLInputElement} inputElement - The input element to validate.
+             */
+            function validateNonNegative(inputElement) {
+                if (parseFloat(inputElement.value) < 0) {
+                    inputElement.value = '0';
+                }
+            }
+
+            /**
+             * Calculates the loan amount plus simple interest and updates the display in F2.
+             */
+            function updateF2() {
+                // Ensure values are non-negative before calculation
+                validateNonNegative(loanAmountActualInput);
+                validateNonNegative(loanInterestRateInput);
+                const principal = parseFloat(loanAmountActualInput.value) || 0;
+                const interestRate = parseFloat(loanInterestRateInput.value) || 0;
+                // Calculate simple interest: Principal + (Principal * Interest Rate / 100)
+                const totalAmountWithInterest = principal * (1 + (interestRate / 100));
+                console.log(`F2 Calculation Debug: Principal=${principal}, Rate=${interestRate}, Result=${totalAmountWithInterest}`); // Debug log
+                loanInvestmentDisplay.textContent = formatNumber(totalAmountWithInterest);
+                updateA1A2(); // Call updateA1A2 whenever F2 changes
+            }
+
+            /**
+             * Calculates the sum of F1 and F2 and updates A1, A2.
+             * Formula: A1 = F1 + F2
+             * Formula: A2 = F1 + F2
+             */
+            function updateA1A2() {
+                const f1Value = parseFloat(equityInvestmentInput.value) || 0;
+                // Get the numeric value from F2's display span, removing commas
+                const f2Value = parseFloat(loanInvestmentDisplay.textContent.replace(/,/g, '')) || 0;
+                const totalInvestment = f1Value + f2Value;
+                console.log(`A1/A2 Calculation Debug: F1=${f1Value}, F2=${f2Value}, Result=${totalInvestment}`); // Debug log
+                a1ValueSpan.textContent = formatNumber(totalInvestment);
+                a2ValueSpan.textContent = formatNumber(totalInvestment);
+                updateC1D1(); // Call updateC1D1 whenever A1 changes
+                updateA2B2C2(); // Call updateA2B2C2 whenever A2 changes
+            }
+
+            /**
+             * Calculates C1 and D1 based on A1 and B1 using the specified formulas.
+             * C1 = B1 * 0.9 - A1
+             * D1 = C1 / A1
+             */
+            function updateC1D1() {
+                const a1Value = parseFloat(a1ValueSpan.textContent.replace(/,/g, '')) || 0;
+                const b1Value = parseFloat(b1Input.value) || 0;
+                // C1 = B1 * 0.9 - A1
+                const c1Calculation = (b1Value * 0.9) - a1Value;
+                c1ValueSpan.textContent = formatNumber(c1Calculation);
+                console.log(`C1 Calculation Debug: B1=${b1Value}, A1=${a1Value}, Result=${c1Calculation}`); // Debug log
+                let d1Calculation = 0;
+                if (a1Value !== 0) {
+                    d1Calculation = (c1Calculation / a1Value) * 100; // Convert to percentage
+                }
+                d1ValueSpan.textContent = formatNumber(d1Calculation) + '%';
+                console.log(`D1 Calculation Debug: C1=${c1Calculation}, A1=${a1Value}, Result=${d1Calculation}%`); // Debug log
+                updateH3(); // C1 changes, so update H3
+            }
+
+            /**
+             * Calculates B2 and C2 based on A2 and D2 using the specified formulas.
+             * C2 = A2 * D2
+             * B2 = (A2 + C2) / 0.9
+             */
+            function updateA2B2C2() {
+                const a2Value = parseFloat(a2ValueSpan.textContent.replace(/,/g, '')) || 0;
+                const d2Value = parseFloat(d2Input.value) || 0;
+                // C2 = A2 * D2 (assuming D2 is a percentage, so divide by 100)
+                const c2Calculation = a2Value * (d2Value / 100);
+                c2ValueSpan.textContent = formatNumber(c2Calculation);
+                console.log(`C2 Calculation Debug: A2=${a2Value}, D2=${d2Value}, Result=${c2Calculation}`); // Debug log
+                // B2 = (A2 + C2) / 0.9
+                let b2Calculation = 0;
+                if (0.9 !== 0) { // Avoid division by zero
+                    b2Calculation = (a2Value + c2Calculation) / 0.9;
+                }
+                b2ValueSpan.textContent = formatNumber(b2Calculation);
+                console.log(`B2 Calculation Debug: A2=${a2Value}, C2=${c2Calculation}, Result=${b2Calculation}`); // Debug log
+            }
+
+            /**
+             * Calculates A3 and C3 based on B3 and D3 using the latest specified formulas.
+             * A3 = B3 * 0.9 / (1 + D3)
+             * C3 = A3 * D3
+             */
+            function updateA3C3() {
+                const b3Value = parseFloat(b3Input.value) || 0; // Get B3 value
+                const d3Value = parseFloat(d3Input.value) || 0; // Get D3 value (percentage)
+                let a3Calculation = 0;
+                // A3 = B3 * 0.9 / (1 + D3) -- assuming D3 is percentage, so D3/100
+                if ((1 + (d3Value / 100)) !== 0) { // Avoid division by zero
+                    a3Calculation = (b3Value * 0.9) / (1 + (d3Value / 100));
+                }
+                a3ValueSpan.textContent = formatNumber(a3Calculation);
+                console.log(`A3 Calculation Debug: B3=${b3Value}, D3=${d3Value}, Result=${a3Calculation}`); // Debug log
+                // C3 = A3 * D3 (assuming D3 is percentage, so D3/100)
+                const c3Calculation = a3Calculation * (d3Value / 100);
+                c3ValueSpan.textContent = formatNumber(c3Calculation);
+                console.log(`C3 Calculation Debug: A3=${a3Calculation}, D3=${d3Value}, Result=${c3Calculation}`); // Debug log
+            }
+
+            /**
+             * Calculates H3 based on C1 and F1.
+             * H3 = C1 / F1, displayed as percentage with 2 decimal places.
+             */
+            function updateH3() {
+                const c1Value = parseFloat(c1ValueSpan.textContent.replace(/,/g, '')) || 0;
+                const f1Value = parseFloat(equityInvestmentInput.value) || 0;
+                console.log(`updateH3 Debug: C1 = ${c1Value}, F1 = ${f1Value}`); // Debug log
+                let h3Calculation = 0;
+                if (f1Value !== 0) { // Avoid division by zero
+                    h3Calculation = (c1Value / f1Value) * 100; // Convert to percentage
+                }
+                // Format H3 with 2 decimal places
+                h3ValueSpan.textContent = formatNumber(h3Calculation, 2);
+                console.log(`H3 calculated Debug: ${h3Calculation}%`); // Debug log
+            }
+
+            /**
+             * Sets default values for specified input fields and triggers recalculations.
+             */
+            function resetToDefaults() {
+                b1Input.value = '350000';
+                b3Input.value = '350000';
+                d2Input.value = '20';
+                d3Input.value = '20';
+                dollarRateInput.value = '3.65';
+                equityInvestmentInput.value = '300000';
+                loanAmountActualInput.value = '0';
+                loanInterestRateInput.value = '0';
+
+                // Save the new default values to localStorage
+                inputElements.forEach(saveInputValue);
+
+                // Trigger all necessary updates after setting defaults
+                updateF2();
+                updateA3C3();
+                updateH3();
+                updateC1D1(); // Ensure C1/D1 are updated if B1 changed
+                updateA2B2C2(); // Ensure A2/B2/C2 are updated if D2 changed
+            }
+
+            // Load saved values or set defaults on page load
+            loadInputValue(dollarRateInput, '3.75'); // E1 can have decimals
+            loadInputValue(b1Input, '120000');
+            loadInputValue(d2Input, '30');
+            loadInputValue(equityInvestmentInput, '100000'); // Set a non-zero default for F1
+            loadInputValue(loanAmountActualInput, '10000');
+            loadInputValue(loanInterestRateInput, '10');
+            loadInputValue(b3Input, '0'); // Default B3 can be 0 or synced with B1 initially
+            loadInputValue(d3Input, '0'); // Default D3 can be 0
+
+            // Add event listeners to save input values and trigger calculations
+            inputElements.forEach(input => {
+                input.addEventListener('input', () => {
+                    saveInputValue(input);
+                    // Handle B1/B3 synchronization
+                    if (input === b1Input) {
+                        b3Input.value = input.value; // Sync B3 with B1
+                        saveInputValue(b3Input); // Save synced B3
+                        updateC1D1(); // B1 changes affect C1/D1
+                        updateA3C3(); // B1 change (via B3 sync) affects A3/C3
+                    } else if (input === b3Input) {
+                        b1Input.value = input.value; // Sync B1 with B3
+                        saveInputValue(b1Input); // Save synced B1
+                        updateA3C3(); // B3 changes affect A3/C3
+                        updateC1D1(); // B3 change (via B1 sync) affects C1/D1
+                    }
+                    // Trigger relevant update functions based on which input changed (excluding B1/B3 as they are handled above)
+                    else if (input === equityInvestmentInput || input === loanAmountActualInput || input === loanInterestRateInput) {
+                        updateF2(); // F1, H1, H2 changes affect F2, which then updates A1/A2 and cascades
+                        updateA3C3(); // A2 (affected by A1/A2 cascade) changes -> update A3/C3
+                        updateH3(); // F1 changes, so update H3
+                    } else if (input === d2Input) {
+                        updateA2B2C2(); // D2 changes affect A2/B2/C2
+                        updateA3C3(); // A2 (affected by A2B2C2) changes -> update A3/C3
+                    } else if (input === b3Input || input === d3Input) { // B3 and D3 now control A3/C3
+                        updateA3C3();
+                    }
+                });
+            });
+
+            // Add event listener for the reset button
+            resetButton.addEventListener('click', resetToDefaults);
+
+            // Perform initial calculations when the page loads after loading saved values
+            updateF2(); // This will trigger the cascade of updates: F2 -> A1/A2 -> C1/D1 & A2/B2/C2
+            updateA3C3(); // Initial call for A3 and C3
+            updateH3(); // Initial call for H3
+        });
+    </script>
+    <style>
+        /* Style for the temporary cell labels */
+        .cell-label {
+            font-size: 0.7em;
+            color: #888;
+            margin-left: 5px;
+            float: left; /* Align to the left for RTL */
+            direction: ltr; /* Ensure LTR direction for cell labels */
+            font-weight: normal;
+        }
+    </style>
+</body>
+</html>
+
+
