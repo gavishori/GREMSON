@@ -68,15 +68,15 @@
             text-align: right; /* Align text to the right for RTL */
         }
         th {
-            background-color: #3498db; /* Blue header background */
-            color: white; /* White text for headers */
+            background-color: #3498db;
+            color: white;
             font-weight: bold;
         }
         tr:nth-child(even) {
-            background-color: #f9f9f9; /* Zebra striping for rows */
+            background-color: #f9f9f9;
         }
         tr:hover {
-            background-color: #eaf2f8; /* Hover effect for rows */
+            background-color: #eaf2f8;
         }
         .dollar-rate-container {
             display: flex; /* Use flexbox for horizontal layout */
@@ -214,7 +214,7 @@
         .investment-table tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-        .investment-table tr:hover {
+        tr:hover {
             background-color: #eaf2f8;
         }
         /* Style for the investment amount input fields (similar to editable-price-input) */
@@ -258,7 +258,7 @@
         .loan-details-table tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-        .loan-details-table tr:hover {
+        tr:hover {
             background-color: #eaf2f8;
         }
         /* Specific styling for the loan amount input */
@@ -393,7 +393,7 @@
             td::before {
                 content: attr(data-label);
                 font-weight: bold;
-                text-align: right; /* יישור לימין לתווית עצמה */
+                text-align: right;
                 color: #191970; /* Dark blue for labels on small screens */
                 margin-bottom: 5px; /* רווח קטן מתחת לתווית */
                 display: block; /* ודא שהתווית תופסת שורה משלה */
@@ -496,7 +496,7 @@
         <tbody>
             <tr>
                 <td data-label="השקעה" class="equity-cell">
-                    <span class="cell-label">A1</span><span id="a1Value">100,000</span>
+                    <span id="a1Value">100,000</span><span class="cell-label">A1</span>
                 </td>
                 <td data-label="מחיר מכירה">
                     <div class="input-with-symbol-container">
@@ -523,10 +523,10 @@
             </tr>
             <tr>
                 <td data-label="השקעה" class="equity-cell">
-                    <span class="cell-label">A2</span><span id="a2Value">50,000</span>
+                    <span id="a2Value">50,000</span><span class="cell-label">A2</span>
                 </td>
                 <td data-label="מחיר מכירה" class="profit-in-dollars-cell">
-                    <span class="cell-label">B2</span><span id="b2Value">65,000</span>
+                    <span id="b2Value">65,000</span><span class="cell-label">B2</span>
                 </td>
                 <td data-label="סכום הרווח" class="profit-in-dollars-cell">
                     <div class="display-currency-cell">
@@ -546,7 +546,7 @@
             </tr>
             <tr>
                 <td data-label="השקעה" class="equity-cell">
-                    <span class="cell-label">A3</span><span id="a3Value"></span>
+                    <span id="a3Value"></span><span class="cell-label">A3</span>
                 </td>
                 <td data-label="מחיר מכירה">
                     <div class="input-with-symbol-container">
@@ -615,9 +615,9 @@
                     <td data-label="השקעה כספית">הלוואה</td>
                     <td data-label="סה&quot;כ $" class="profit-in-dollars-cell">
                         <div class="display-currency-cell">
-                            <span class="cell-label">F2</span>
                             <span id="loanInvestmentDisplay"></span> <span class="symbol-left">$</span>
                         </div>
+                        <span class="cell-label">F2</span>
                     </td>
                     <td data-label="אחוז ההשקעה" class="profit-in-dollars-cell">
                         <div class="display-currency-cell">
@@ -625,6 +625,22 @@
                             <span class="symbol-left">%</span>
                         </div>
                         <span class="cell-label">G2</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td data-label="השקעה כספית">refinance</td>
+                    <td data-label="סה&quot;כ $" class="profit-in-dollars-cell">
+                        <div class="display-currency-cell">
+                            <span id="refinanceDollarValue"></span> <span class="symbol-left">$</span>
+                        </div>
+                        <span class="cell-label">H4</span>
+                    </td>
+                    <td data-label="אחוז ההשקעה">
+                        <div class="input-with-symbol-container">
+                            <input type="number" class="editable-percentage-input" id="refinancePercentageInput" step="1">
+                            <span class="symbol-left">%</span>
+                        </div>
+                        <span class="cell-label">H3</span>
                     </td>
                 </tr>
             </tbody>
@@ -658,12 +674,13 @@
                     </td>
                 </tr>
                 <tr class="profit-in-dollars-cell">
-                    <td data-label="השקעה כספית">אחוז הרווח על ההשקעה</td>
-                    <td data-label="סה&quot;כ $">
+                    <td data-label="אחוז הרווח על ההשקעה">אחוז הרווח על ההשקעה</td>
+                    <td data-label="אחוז הרווח על ההשקעה">
                         <div class="display-currency-cell">
-                            <span id="h3Value"></span>
-                            <span class="symbol-left">%</span> </div>
-                        <span class="cell-label">H3</span>
+                            <span id="h3ValueLoanDisplay"></span>
+                            <span class="symbol-left">%</span>
+                        </div>
+                        <span class="cell-label">H5</span>
                     </td>
                 </tr>
             </tbody>
@@ -693,12 +710,14 @@
             const a3ValueSpan = document.getElementById('a3Value'); // A3 display span
             const c3ValueSpan = document.getElementById('c3Value'); // C3 display span
             const loanInvestmentDisplay = document.getElementById('loanInvestmentDisplay');
-            const h3ValueSpan = document.getElementById('h3Value'); // H3 display span
+            const refinanceDollarValue = document.getElementById('refinanceDollarValue'); // New refinance dollar display (H4)
+            const refinancePercentageInput = document.getElementById('refinancePercentageInput'); // New refinance percentage input (H3)
+            const h3ValueLoanDisplaySpan = document.getElementById('h3ValueLoanDisplay'); // H5 display span in loan table
 
             const inputElements = [
                 dollarRateInput, b1Input, d2Input,
                 equityInvestmentInput, loanAmountActualInput, loanInterestRateInput,
-                b3Input, d3Input // Add new inputs to the list for saving/loading
+                b3Input, d3Input, refinancePercentageInput // Add new input to the list for saving/loading
             ];
 
             /**
@@ -759,7 +778,7 @@
                     inputElement.value = defaultValue;
                 }
                 // Ensure non-negative for loan inputs and percentages
-                if (inputElement === loanAmountActualInput || inputElement === loanInterestRateInput || inputElement === d3Input) {
+                if (inputElement === loanAmountActualInput || inputElement === loanInterestRateInput || inputElement === d3Input || inputElement === refinancePercentageInput) {
                     if (parseFloat(inputElement.value) < 0) {
                         inputElement.value = '0';
                     }
@@ -811,6 +830,7 @@
 
                 updateC1D1(); // Call updateC1D1 whenever A1 changes
                 updateA2B2C2(); // Call updateA2B2C2 whenever A2 changes
+                updateH5(); // F1 changes, so update H5
             }
 
             /**
@@ -833,7 +853,7 @@
                 }
                 d1ValueSpan.textContent = formatNumber(d1Calculation) + '%';
                 console.log(`D1 Calculation Debug: C1=${c1Calculation}, A1=${a1Value}, Result=${d1Calculation}%`); // Debug log
-                updateH3(); // C1 changes, so update H3
+                updateH5(); // C1 changes, so update H5
             }
 
             /**
@@ -883,21 +903,36 @@
             }
 
             /**
-             * Calculates H3 based on C1 and F1.
-             * H3 = C1 / F1, displayed as percentage with 2 decimal places.
+             * Calculates H3 (refinance percentage) and the corresponding dollar value (H4).
+             * Updates the display in the investment table.
              */
             function updateH3() {
+                validateNonNegative(refinancePercentageInput);
+                const h3Value = parseFloat(refinancePercentageInput.value) || 0;
+                const b1Value = parseFloat(b1Input.value) || 0;
+
+                // Calculate the dollar value for the refinance row in the investment table (H4)
+                const refinanceDollarCalculation = b1Value * (h3Value / 100);
+                refinanceDollarValue.textContent = formatNumber(refinanceDollarCalculation);
+
+                console.log(`H3 (input) Debug: ${h3Value}%`);
+                console.log(`Refinance Dollar (H4) Debug: B1=${b1Value}, H3=${h3Value}, Result=${refinanceDollarCalculation}`);
+            }
+
+            /**
+             * Calculates H5 based on C1 and F1.
+             * Updates the display in the loan details table.
+             */
+            function updateH5() {
                 const c1Value = parseFloat(c1ValueSpan.textContent.replace(/,/g, '')) || 0;
                 const f1Value = parseFloat(equityInvestmentInput.value) || 0;
-                console.log(`updateH3 Debug: C1 = ${c1Value}, F1 = ${f1Value}`); // Debug log
 
-                let h3Calculation = 0;
-                if (f1Value !== 0) { // Avoid division by zero
-                    h3Calculation = (c1Value / f1Value) * 100; // Convert to percentage
+                let h5Calculation = 0;
+                if (f1Value !== 0) {
+                    h5Calculation = (c1Value / f1Value) * 100; // Convert to percentage
                 }
-                // Format H3 with 2 decimal places
-                h3ValueSpan.textContent = formatNumber(h3Calculation, 2);
-                console.log(`H3 calculated Debug: ${h3Calculation}%`); // Debug log
+                h3ValueLoanDisplaySpan.textContent = formatNumber(h5Calculation, 2);
+                console.log(`H5 calculated (C1/F1) Debug: ${h5Calculation}%`);
             }
 
             /**
@@ -912,6 +947,7 @@
                 equityInvestmentInput.value = '300000';
                 loanAmountActualInput.value = '0';
                 loanInterestRateInput.value = '0';
+                refinancePercentageInput.value = '75'; // Set default for new input (H3)
 
                 // Save the new default values to localStorage
                 inputElements.forEach(saveInputValue);
@@ -919,9 +955,10 @@
                 // Trigger all necessary updates after setting defaults
                 updateF2();
                 updateA3C3();
-                updateH3();
+                updateH3(); // Call H3 update after reset
                 updateC1D1(); // Ensure C1/D1 are updated if B1 changed
                 updateA2B2C2(); // Ensure A2/B2/C2 are updated if D2 changed
+                updateH5(); // Call H5 update after reset
             }
 
             // Load saved values or set defaults on page load
@@ -933,6 +970,7 @@
             loadInputValue(loanInterestRateInput, '10');
             loadInputValue(b3Input, '0'); // Default B3 can be 0 or synced with B1 initially
             loadInputValue(d3Input, '0'); // Default D3 can be 0
+            loadInputValue(refinancePercentageInput, '75'); // Load for new input (H3)
 
             // Add event listeners to save input values and trigger calculations
             inputElements.forEach(input => {
@@ -944,22 +982,26 @@
                         saveInputValue(b3Input); // Save synced B3
                         updateC1D1(); // B1 changes affect C1/D1
                         updateA3C3(); // B1 change (via B3 sync) affects A3/C3
+                        updateH3(); // B1 also affects the refinance dollar value (H4)
                     } else if (input === b3Input) {
                         b1Input.value = input.value; // Sync B1 with B3
                         saveInputValue(b1Input); // Save synced B1
                         updateA3C3(); // B3 changes affect A3/C3
                         updateC1D1(); // B3 change (via B1 sync) affects C1/D1
+                        updateH3(); // B1 (via B3 sync) also affects the refinance dollar value (H4)
                     }
                     // Trigger relevant update functions based on which input changed (excluding B1/B3 as they are handled above)
                     else if (input === equityInvestmentInput || input === loanAmountActualInput || input === loanInterestRateInput) {
                         updateF2(); // F1, H1, H2 changes affect F2, which then updates A1/A2 and cascades
                         updateA3C3(); // A2 (affected by A1/A2 cascade) changes -> update A3/C3
-                        updateH3(); // F1 changes, so update H3
+                        // H3 is now an input, so no need to call updateH3 here directly based on F1/H1/H2
                     } else if (input === d2Input) {
                         updateA2B2C2(); // D2 changes affect A2/B2/C2
                         updateA3C3(); // A2 (affected by A2B2C2) changes -> update A3/C3
                     } else if (input === b3Input || input === d3Input) { // B3 and D3 now control A3/C3
                         updateA3C3();
+                    } else if (input === refinancePercentageInput) { // New input for H3
+                        updateH3();
                     }
                 });
             });
@@ -970,7 +1012,8 @@
             // Perform initial calculations when the page loads after loading saved values
             updateF2(); // This will trigger the cascade of updates: F2 -> A1/A2 -> C1/D1 & A2/B2/C2
             updateA3C3(); // Initial call for A3 and C3
-            updateH3(); // Initial call for H3
+            updateH3(); // Initial call for H3 (refinance)
+            updateH5(); // Initial call for H5 (C1/F1)
         });
     </script>
     <style>
