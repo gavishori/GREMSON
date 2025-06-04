@@ -902,7 +902,7 @@
         <div class="comps-button-container">
             <button id="getCompsButton" class="comps-button">בצע</button>
         </div>
-        <textarea id="generatedPromptTextarea" rows="5" cols="50" style="width: 100%; margin-top: 10px; font-size: 0.8em; direction: ltr; text-align: left; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 5px; padding: 5px;" placeholder="השאלה המלאה ל-Gemini תופיע כאן..."></textarea>
+        <textarea id="generatedPromptTextarea" rows="5" cols="50" style="width: 100%; margin-top: 10px; font-size: 0.8em; direction: rtl; text-align: right; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 5px; padding: 5px;" placeholder="השאלה המלאה ל-Gemini תופיע כאן..."></textarea>
     </div>
     <div class="footer-links-container">
         <div class="footer-link-box">
@@ -1209,7 +1209,6 @@
 
             /**
              * Generates the prompt text for Gemini based on the address input.
-             * This function no longer makes API calls or updates result fields directly.
              * @param {string} address The address from the input field.
              * @returns {string} The generated prompt text.
              */
@@ -1242,8 +1241,6 @@
                 updateC1D1(); // Ensure C1/D1 are updated if B1 changed
                 updateA2B2C2(); // Ensure A2/B2/C2 are updated if D2 changed
                 updateH5(); // Call H5 update after reset
-                // estimatedSalePrice.textContent = ''; // Removed
-                // estimatedRentalPrice.textContent = ''; // Removed
                 generatedPromptTextarea.value = ''; // Clear generated prompt area
             }
 
@@ -1306,15 +1303,17 @@
                 if (address) {
                     const promptText = generateGeminiPrompt(address); // Generate the prompt
                     generatedPromptTextarea.value = promptText; // Display the prompt in the textarea
-
+                    
+                    // Copy text to clipboard
+                    generatedPromptTextarea.select();
+                    document.execCommand('copy');
+                    
                     // Open Gemini in a new tab with the prompt pre-filled
-                    // Note: Direct pasting to chat input is not possible due to browser security.
-                    // User will need to manually paste from the textarea.
                     window.open(`https://gemini.google.com/app?q=${encodeURIComponent(promptText)}`, '_blank');
 
-                    // Clear estimated prices as we are no longer getting them automatically
-                    // estimatedSalePrice.textContent = ''; // Removed
-                    // estimatedRentalPrice.textContent = ''; // Removed
+                    // Inform the user that text has been copied
+                    alert("השאלה הועתקה ללוח. אנא הדבק אותה בתיבת השיחה של Gemini.");
+
                 } else {
                     alert("אנא הזן כתובת כדי ליצור את השאלה ל-Comps.");
                     generatedPromptTextarea.value = 'אנא הזן כתובת כדי ליצור את השאלה ל-Comps.';
