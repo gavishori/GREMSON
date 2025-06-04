@@ -205,13 +205,13 @@
             margin-top: 30px;
             margin-bottom: 15px; /* Add some margin below for the new box */
             clear: both; /* Ensure it clears previous floats */
-            align-items: center; /* Vertically align items in the container */
-            gap: 10px; /* Space between dollar rate box and reset button */
+            align-items: center; /* Vertically align-items */
+            gap: 10px; /* Space between label and input */
         }
         .dollar-rate-box {
             background-color: #ecf0f1; /* Light grey background for boxes */
             border: 1px solid #bdc3c7; /* Grey border */
-            padding: 15px 20px;
+            padding: 10px 15px;
             border-radius: 8px; /* Rounded corners */
             font-size: 1.1em;
             font-weight: bold;
@@ -231,7 +231,7 @@
             color: #191970; /* Dark blue for input text */
         }
         /* Style for the container holding the input and currency/percentage symbol */
-        .input-with-symbol-container { /* More generic name */
+        .input-with-symbol-container {
             display: flex;
             align-items: center;
             justify-content: flex-end; /* Align to the right for RTL */
@@ -568,7 +568,7 @@
                 border: 1px solid #cccccc;
                 padding: 10px 15px; /* פאדינג אחיד או מותאם אישית */
                 text-align: right; /* יישור לימין עבור RTL */
-                display: flex; /* הפוך את התא לקונטיינר גמיש (flex container) */
+                display: flex; /* הפוך את התא לקונטיינר גמיס (flex container) */
                 flex-direction: column; /* ערום את התוכן בעמודה */
                 align-items: flex-start; /* יישר את התוכן לשמאל בתוך התא */
                 position: relative; /* החזר position: relative; כדי למקם את ה-cell-label אם צריך */
@@ -1228,7 +1228,7 @@
                 estimatedRentalPrice.textContent = 'טוען...';
 
                 // Updated prompt as per user's request
-                const prompt = `תן לי comps לנכסים בעלי מאפיינים דומים (מספר חדרים, אמבטיות, מגרש, שנת בניה וכ' ככל שתמצא לנכון) שנמכרו או הושכרו בחצי שנה האחרונה ברדיוס של חצי מייל מהנכס אך לא חוצים זיפ רוד. את התשובות אתה מחזיר לטבלה בפרויקט בהתאמה: מכירה למכירה - השכרה להשכרה. כתובת הנכס: "${address}"`;
+                const prompt = `תן לי comps לנכסים בעלי מאפיינים דומים (מספר חדרים, אמבטיות, מגרש, שנת בניה וכ' ככל שתמצא לנכון) שנמכרו או הושכרו בחצי שנה האחרונה ברדיוס של חצי מייל מהנכס אך לא חוצים זיפ רוד. כתובת הנכס: "${address}"`;
 
                 let chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
@@ -1236,7 +1236,7 @@
                 const payload = {
                     contents: chatHistory,
                     generationConfig: {
-                        responseMimeType: "application/json",
+                        responseMimeType: "application/json", // Still request JSON
                         responseSchema: {
                             type: "OBJECT",
                             properties: {
@@ -1258,20 +1258,37 @@
                         body: JSON.stringify(payload)
                     });
 
-                    const result = await response.json();
+                    const rawText = await response.text(); // Get raw text first
+                    console.log("Full Gemini API response (raw text):", rawText); // Log raw text
 
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
-                        const jsonString = result.candidates[0].content.parts[0].text;
-                        const parsedJson = JSON.parse(jsonString);
+                    try {
+                        const result = JSON.parse(rawText); // Try parsing the raw text
+                        console.log("Full Gemini API response (parsed JSON):", result); // Log the parsed JSON
 
-                        estimatedSalePrice.textContent = parsedJson.salePrice || 'N/A';
-                        estimatedRentalPrice.textContent = parsedJson.rentalPrice || 'N/A';
-                    } else {
-                        estimatedSalePrice.textContent = 'שגיאה בטעינה';
-                        estimatedRentalPrice.textContent = 'שגיאה בטעינה';
-                        console.error('Unexpected LLM response structure:', result);
+                        if (result.candidates && result.candidates.length > 0 &&
+                            result.candidates[0].content && result.candidates[0].content.parts &&
+                            result.candidates[0].content.parts.length > 0) {
+                            const jsonString = result.candidates[0].content.parts[0].text;
+                            console.log("Gemini API response text part (should be JSON string):", jsonString); // Log the text part
+
+                            try {
+                                const parsedJson = JSON.parse(jsonString); // Parse the inner JSON string
+                                estimatedSalePrice.textContent = parsedJson.salePrice || 'N/A';
+                                estimatedRentalPrice.textContent = parsedJson.rentalPrice || 'N/A';
+                            } catch (innerParseError) {
+                                estimatedSalePrice.textContent = 'שגיאה בפורמט התשובה';
+                                estimatedRentalPrice.textContent = 'שגיאה בפורמט התשובה';
+                                console.error('Error parsing inner JSON from Gemini text:', innerParseError, 'Received inner text:', jsonString);
+                            }
+                        } else {
+                            estimatedSalePrice.textContent = 'שגיאה בטעינה';
+                            estimatedRentalPrice.textContent = 'שגיאה בטעינה';
+                            console.error('Unexpected LLM response structure (no candidates/content):', result);
+                        }
+                    } catch (outerParseError) {
+                        estimatedSalePrice.textContent = 'שגיאה בפורמט התשובה';
+                        estimatedRentalPrice.textContent = 'שגיאה בפורמט התשובה';
+                        console.error('Error parsing outer JSON from raw text:', outerParseError, 'Received raw text:', rawText);
                     }
                 } catch (error) {
                     estimatedSalePrice.textContent = 'שגיאה: ' + error.message;
