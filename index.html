@@ -911,7 +911,7 @@
         <div class="comps-button-container">
             <button id="getCompsButton" class="comps-button">בצע</button>
         </div>
-        <textarea id="geminiRawResponse" rows="5" cols="50" style="width: 100%; margin-top: 10px; font-size: 0.8em; direction: ltr; text-align: left; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 5px; padding: 5px;" placeholder="תשובה גולמית מ-Gemini תופיע כאן..."></textarea>
+        <textarea id="generatedPromptTextarea" rows="5" cols="50" style="width: 100%; margin-top: 10px; font-size: 0.8em; direction: ltr; text-align: left; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 5px; padding: 5px;" placeholder="השאלה המלאה ל-Gemini תופיע כאן..."></textarea>
     </div>
     <div class="footer-links-container">
         <div class="footer-link-box">
@@ -963,7 +963,7 @@
             const estimatedSalePrice = document.getElementById('estimatedSalePrice');
             const estimatedRentalPrice = document.getElementById('estimatedRentalPrice');
             const getCompsButton = document.getElementById('getCompsButton'); // Get comps button
-            const geminiRawResponse = document.getElementById('geminiRawResponse'); // New textarea for raw response
+            const generatedPromptTextarea = document.getElementById('generatedPromptTextarea'); // New textarea for generated prompt
 
 
             const inputElements = [
@@ -1217,94 +1217,14 @@
             }
 
             /**
-             * Fetches comps data from LLM based on address.
-             * @param {string} address The address to get comps for.
+             * Generates the prompt text for Gemini based on the address input.
+             * This function no longer makes API calls or updates result fields directly.
+             * @param {string} address The address from the input field.
+             * @returns {string} The generated prompt text.
              */
-            async function getCompsData(address) {
-                console.log("getCompsData function called with address:", address); // Log function call
-
-                if (!address) {
-                    estimatedSalePrice.textContent = ''; // Clear on empty address
-                    estimatedRentalPrice.textContent = ''; // Clear on empty address
-                    geminiRawResponse.value = 'אנא הזן כתובת כדי לקבל נתוני Comps.'; // Clear raw response
-                    return;
-                }
-
-                estimatedSalePrice.textContent = 'טוען...';
-                estimatedRentalPrice.textContent = 'טוען...';
-                geminiRawResponse.value = 'טוען... מנסה לקבל תשובה מ-Gemini...'; // Show loading in raw response area
-
-                const prompt = `תן לי comps לנכסים בעלי מאפיינים דומים (מספר חדרים, אמבטיות, מגרש, שנת בניה וכ' ככל שתמצא לנכון) שנמכרו או הושכרו בחצי שנה האחרונה ברדיוס של חצי מייל מהנכס אך לא חוצים זיפ רוד. כתובת הנכס: "${address}"`;
-
-                let chatHistory = [];
-                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-
-                const payload = {
-                    contents: chatHistory,
-                    generationConfig: {
-                        responseMimeType: "application/json", // Still request JSON
-                        responseSchema: {
-                            type: "OBJECT",
-                            properties: {
-                                "salePrice": { "type": "STRING" },
-                                "rentalPrice": { "type": "STRING" }
-                            },
-                            "propertyOrdering": ["salePrice", "rentalPrice"]
-                        }
-                    }
-                };
-
-                const apiKey = ""; // Leave as-is for Canvas to provide
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    const rawText = await response.text(); // Get raw text first
-                    geminiRawResponse.value = rawText; // Display raw text in the textarea
-                    console.log("Full Gemini API response (raw text):", rawText); // Log raw text
-
-                    try {
-                        const result = JSON.parse(rawText); // Try parsing the raw text
-                        console.log("Full Gemini API response (parsed JSON):", result); // Log the parsed JSON
-
-                        if (result.candidates && result.candidates.length > 0 &&
-                            result.candidates[0].content && result.candidates[0].content.parts &&
-                            result.candidates[0].content.parts.length > 0) {
-                            const jsonString = result.candidates[0].content.parts[0].text;
-                            console.log("Gemini API response text part (should be JSON string):", jsonString); // Log the text part
-
-                            try {
-                                const parsedJson = JSON.parse(jsonString); // Parse the inner JSON string
-                                estimatedSalePrice.textContent = parsedJson.salePrice || 'N/A';
-                                estimatedRentalPrice.textContent = parsedJson.rentalPrice || 'N/A';
-                            } catch (innerParseError) {
-                                estimatedSalePrice.textContent = 'שגיאה בפורמט התשובה';
-                                estimatedRentalPrice.textContent = 'שגיאה בפורמט התשובה';
-                                console.error('Error parsing inner JSON from Gemini text:', innerParseError, 'Received inner text:', jsonString);
-                            }
-                        } else {
-                            estimatedSalePrice.textContent = 'שגיאה בטעינה';
-                            estimatedRentalPrice.textContent = 'שגיאה בטעינה';
-                            console.error('Unexpected LLM response structure (no candidates/content):', result);
-                        }
-                    } catch (outerParseError) {
-                        estimatedSalePrice.textContent = 'שגיאה בפורמט התשובה';
-                        estimatedRentalPrice.textContent = 'שגיאה בפורמט התשובה';
-                        console.error('Error parsing outer JSON from raw text:', outerParseError, 'Received raw text:', rawText);
-                    }
-                } catch (error) {
-                    estimatedSalePrice.textContent = 'שגיאה: ' + error.message;
-                    estimatedRentalPrice.textContent = 'שגיאה: ' + error.message;
-                    geminiRawResponse.value = 'שגיאה: ' + error.message; // Display error in raw response area
-                    console.error('Error fetching comps data:', error);
-                }
+            function generateGeminiPrompt(address) {
+                return `תן לי comps לנכסים בעלי מאפיינים דומים (מספר חדרים, אמבטיות, מגרש, שנת בניה וכ' ככל שתמצא לנכון) שנמכרו או הושכרו בחצי שנה האחרונה ברדיוס של חצי מייל מהנכס אך לא חוצים זיפ רוד. כתובת הנכס: "${address}"`;
             }
-
 
             /**
              * Sets default values for specified input fields and triggers recalculations.
@@ -1333,7 +1253,7 @@
                 updateH5(); // Call H5 update after reset
                 estimatedSalePrice.textContent = ''; // Reset comps display
                 estimatedRentalPrice.textContent = ''; // Reset comps display
-                geminiRawResponse.value = ''; // Clear raw response area
+                generatedPromptTextarea.value = ''; // Clear generated prompt area
             }
 
             // Load saved values or set defaults on page load
@@ -1393,13 +1313,20 @@
             getCompsButton.addEventListener('click', () => {
                 const address = addressInput.value;
                 if (address) {
-                    const promptText = `תן לי comps לנכסים בעלי מאפיינים דומים (מספר חדרים, אמבטיות, מגרש, שנת בניה וכ' ככל שתמצא לנכון) שנמכרו או הושכרו בחצי שנה האחרונה ברדיוס של חצי מייל מהנכס אך לא חוצים זיפ רוד. כתובת הנכס: "${address}"`;
+                    const promptText = generateGeminiPrompt(address); // Generate the prompt
+                    generatedPromptTextarea.value = promptText; // Display the prompt in the textarea
+
                     // Open Gemini in a new tab with the prompt pre-filled
+                    // Note: Direct pasting to chat input is not possible due to browser security.
+                    // User will need to manually paste from the textarea.
                     window.open(`https://gemini.google.com/app?q=${encodeURIComponent(promptText)}`, '_blank');
-                    // Trigger the LLM call to get data for the project's display fields
-                    getCompsData(address); // This call is now responsible for updating the text area and parsing
+
+                    // Clear estimated prices as we are no longer getting them automatically
+                    estimatedSalePrice.textContent = '';
+                    estimatedRentalPrice.textContent = '';
                 } else {
-                    alert("אנא הזן כתובת כדי לקבל נתוני Comps.");
+                    alert("אנא הזן כתובת כדי ליצור את השאלה ל-Comps.");
+                    generatedPromptTextarea.value = 'אנא הזן כתובת כדי ליצור את השאלה ל-Comps.';
                 }
             });
 
