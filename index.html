@@ -1221,16 +1221,18 @@
              * @param {string} address The address to get comps for.
              */
             async function getCompsData(address) {
+                console.log("getCompsData function called with address:", address); // Log function call
+
                 if (!address) {
                     estimatedSalePrice.textContent = ''; // Clear on empty address
                     estimatedRentalPrice.textContent = ''; // Clear on empty address
-                    geminiRawResponse.value = ''; // Clear raw response
+                    geminiRawResponse.value = 'אנא הזן כתובת כדי לקבל נתוני Comps.'; // Clear raw response
                     return;
                 }
 
                 estimatedSalePrice.textContent = 'טוען...';
                 estimatedRentalPrice.textContent = 'טוען...';
-                geminiRawResponse.value = 'טוען...'; // Show loading in raw response area
+                geminiRawResponse.value = 'טוען... מנסה לקבל תשובה מ-Gemini...'; // Show loading in raw response area
 
                 const prompt = `תן לי comps לנכסים בעלי מאפיינים דומים (מספר חדרים, אמבטיות, מגרש, שנת בניה וכ' ככל שתמצא לנכון) שנמכרו או הושכרו בחצי שנה האחרונה ברדיוס של חצי מייל מהנכס אך לא חוצים זיפ רוד. כתובת הנכס: "${address}"`;
 
@@ -1394,8 +1396,8 @@
                     const promptText = `תן לי comps לנכסים בעלי מאפיינים דומים (מספר חדרים, אמבטיות, מגרש, שנת בניה וכ' ככל שתמצא לנכון) שנמכרו או הושכרו בחצי שנה האחרונה ברדיוס של חצי מייל מהנכס אך לא חוצים זיפ רוד. כתובת הנכס: "${address}"`;
                     // Open Gemini in a new tab with the prompt pre-filled
                     window.open(`https://gemini.google.com/app?q=${encodeURIComponent(promptText)}`, '_blank');
-                    // Removed the direct call to getCompsData here as requested
-                    // getCompsData(address);
+                    // Trigger the LLM call to get data for the project's display fields
+                    getCompsData(address); // This call is now responsible for updating the text area and parsing
                 } else {
                     alert("אנא הזן כתובת כדי לקבל נתוני Comps.");
                 }
