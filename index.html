@@ -825,6 +825,7 @@
                                 <span></span>
                                 <span class="symbol-left">%</span>
                             </div>
+                            </div>
                         </td>
                     </tr>
                     <tr>
@@ -900,11 +901,11 @@
         <div class="comps-results-container">
             <div class="comp-result-item">
                 <span>מחיר מכירה משוער:</span>
-                <span id="estimatedSalePrice">טוען...</span>
+                <span id="estimatedSalePrice"></span> <!-- Removed "טוען..." -->
             </div>
             <div class="comp-result-item">
                 <span>מחיר השכרה משוער:</span>
-                <span id="estimatedRentalPrice">טוען...</span>
+                <span id="estimatedRentalPrice"></span> <!-- Removed "טוען..." -->
             </div>
         </div>
         <div class="comps-button-container">
@@ -1219,15 +1220,14 @@
              */
             async function getCompsData(address) {
                 if (!address) {
-                    estimatedSalePrice.textContent = 'הזן כתובת';
-                    estimatedRentalPrice.textContent = 'הזן כתובת';
+                    estimatedSalePrice.textContent = ''; // Clear on empty address
+                    estimatedRentalPrice.textContent = ''; // Clear on empty address
                     return;
                 }
 
                 estimatedSalePrice.textContent = 'טוען...';
                 estimatedRentalPrice.textContent = 'טוען...';
 
-                // Updated prompt as per user's request
                 const prompt = `תן לי comps לנכסים בעלי מאפיינים דומים (מספר חדרים, אמבטיות, מגרש, שנת בניה וכ' ככל שתמצא לנכון) שנמכרו או הושכרו בחצי שנה האחרונה ברדיוס של חצי מייל מהנכס אך לא חוצים זיפ רוד. כתובת הנכס: "${address}"`;
 
                 let chatHistory = [];
@@ -1260,6 +1260,8 @@
 
                     const rawText = await response.text(); // Get raw text first
                     console.log("Full Gemini API response (raw text):", rawText); // Log raw text
+                    // Removed alert here as requested
+                    // alert("תשובת Gemini (טקסט גולמי):\n\n" + rawText); // Display raw text in alert
 
                     try {
                         const result = JSON.parse(rawText); // Try parsing the raw text
@@ -1323,8 +1325,8 @@
                 updateC1D1(); // Ensure C1/D1 are updated if B1 changed
                 updateA2B2C2(); // Ensure A2/B2/C2 are updated if D2 changed
                 updateH5(); // Call H5 update after reset
-                estimatedSalePrice.textContent = 'טוען...'; // Reset comps display
-                estimatedRentalPrice.textContent = 'טוען...'; // Reset comps display
+                estimatedSalePrice.textContent = ''; // Reset comps display
+                estimatedRentalPrice.textContent = ''; // Reset comps display
             }
 
             // Load saved values or set defaults on page load
@@ -1387,8 +1389,8 @@
                     const promptText = `תן לי comps לנכסים בעלי מאפיינים דומים (מספר חדרים, אמבטיות, מגרש, שנת בניה וכ' ככל שתמצא לנכון) שנמכרו או הושכרו בחצי שנה האחרונה ברדיוס של חצי מייל מהנכס אך לא חוצים זיפ רוד. כתובת הנכס: "${address}"`;
                     // Open Gemini in a new tab with the prompt pre-filled
                     window.open(`https://gemini.google.com/app?q=${encodeURIComponent(promptText)}`, '_blank');
-                    // Trigger the LLM call to get data for the project's display fields
-                    getCompsData(address);
+                    // Removed the direct call to getCompsData here as requested
+                    // getCompsData(address);
                 } else {
                     alert("אנא הזן כתובת כדי לקבל נתוני Comps.");
                 }
