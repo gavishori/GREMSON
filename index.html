@@ -175,6 +175,20 @@
         .comps-button:hover {
             background-color: #2980b9; /* Darker blue on hover */
         }
+        /* Style for the generated prompt textarea */
+        #generatedPromptTextarea {
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #e0ffe0; /* Light green background */
+            text-align: right; /* Align text to right for RTL */
+            color: #191970;
+            resize: vertical; /* Allow vertical resizing */
+            min-height: 80px; /* Minimum height */
+        }
 
 
         table {
@@ -898,11 +912,13 @@
             <label for="addressInput">כתובת:</label>
             <input type="text" id="addressInput" placeholder="הזן כתובת">
         </div>
-        <!-- Removed comps-results-container as requested -->
+        <div class="comps-question-container" style="margin-top: 10px;">
+            <label for="generatedPromptTextarea">השאלה ל-Gemini:</label>
+            <textarea id="generatedPromptTextarea" rows="5" cols="50" style="width: 100%; font-size: 0.8em; direction: rtl; text-align: right; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 5px; padding: 5px;" placeholder="השאלה המלאה ל-Gemini תופיע כאן..." readonly></textarea>
+        </div>
         <div class="comps-button-container">
             <button id="getCompsButton" class="comps-button">בצע</button>
         </div>
-        <textarea id="generatedPromptTextarea" rows="5" cols="50" style="width: 100%; margin-top: 10px; font-size: 0.8em; direction: rtl; text-align: right; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 5px; padding: 5px;" placeholder="השאלה המלאה ל-Gemini תופיע כאן..." readonly></textarea>
     </div>
     <div class="footer-links-container">
         <div class="footer-link-box">
@@ -951,8 +967,6 @@
 
             // Comps elements
             const addressInput = document.getElementById('addressInput');
-            // const estimatedSalePrice = document.getElementById('estimatedSalePrice'); // Removed
-            // const estimatedRentalPrice = document.getElementById('estimatedRentalPrice'); // Removed
             const getCompsButton = document.getElementById('getCompsButton'); // Get comps button
             const generatedPromptTextarea = document.getElementById('generatedPromptTextarea'); // New textarea for generated prompt
 
@@ -1242,8 +1256,6 @@
                 updateA2B2C2(); // Ensure A2/B2/C2 are updated if D2 changed
                 updateH5(); // Call H5 update after reset
                 generatedPromptTextarea.value = ''; // Clear generated prompt area
-                // estimatedSalePrice.textContent = ''; // Removed
-                // estimatedRentalPrice.textContent = ''; // Removed
             }
 
             // Load saved values or set defaults on page load
