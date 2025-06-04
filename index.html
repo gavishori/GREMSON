@@ -902,7 +902,7 @@
         <div class="comps-button-container">
             <button id="getCompsButton" class="comps-button">בצע</button>
         </div>
-        <textarea id="generatedPromptTextarea" rows="5" cols="50" style="width: 100%; margin-top: 10px; font-size: 0.8em; direction: rtl; text-align: right; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 5px; padding: 5px;" placeholder="השאלה המלאה ל-Gemini תופיע כאן..."></textarea>
+        <textarea id="generatedPromptTextarea" rows="5" cols="50" style="width: 100%; margin-top: 10px; font-size: 0.8em; direction: rtl; text-align: right; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 5px; padding: 5px;" placeholder="השאלה המלאה ל-Gemini תופיע כאן..." readonly></textarea>
     </div>
     <div class="footer-links-container">
         <div class="footer-link-box">
@@ -1242,6 +1242,8 @@
                 updateA2B2C2(); // Ensure A2/B2/C2 are updated if D2 changed
                 updateH5(); // Call H5 update after reset
                 generatedPromptTextarea.value = ''; // Clear generated prompt area
+                // estimatedSalePrice.textContent = ''; // Removed
+                // estimatedRentalPrice.textContent = ''; // Removed
             }
 
             // Load saved values or set defaults on page load
