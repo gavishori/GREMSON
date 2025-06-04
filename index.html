@@ -100,11 +100,11 @@
             background-color: #e6f7ff; /* Light blue */
         }
         .table-wrapper.investment-table-wrapper {
-            background-color: #e0ffe0; /* Light green */
+            background-color: #e0f2f7; /* Light cyan/blue */
             flex: 1; /* Allow to grow in flex container */
         }
         .table-wrapper.loan-table-wrapper {
-            background-color: #fffbe6; /* Light yellow */
+            background-color: #e6f0ff; /* Light lavender blue */
             flex: 1; /* Allow to grow in flex container */
         }
 
@@ -282,7 +282,7 @@
         .investment-table tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-        .investment-table tr:hover {
+        tr:hover {
             background-color: #eaf2f8;
         }
         /* Style for the investment amount input fields (similar to editable-price-input) */
@@ -817,6 +817,25 @@
             </table>
         </div>
     </div>
+    <div class="additional-right-box">
+        <h3>Comps</h3>
+    </div>
+    <div class="table-wrapper comps-table-wrapper">
+        <div class="comps-input-container">
+            <label for="addressInput">כתובת:</label>
+            <input type="text" id="addressInput" placeholder="הזן כתובת">
+        </div>
+        <div class="comps-results-container">
+            <div class="comp-result-item">
+                <span>מחיר מכירה משוער:</span>
+                <span id="estimatedSalePrice">טוען...</span>
+            </div>
+            <div class="comp-result-item">
+                <span>מחיר השכרה משוער:</span>
+                <span id="estimatedRentalPrice">טוען...</span>
+            </div>
+        </div>
+    </div>
     <div class="footer-links-container">
         <div class="footer-link-box">
             <a href="https://gengine.co/home" target="_blank">גרמסונית</a>
@@ -861,6 +880,11 @@
             const c3ValueILS = document.getElementById('c3ValueILS');
             const loanInvestmentDisplayILS = document.getElementById('loanInvestmentDisplayILS');
             const refinanceDollarValueILS = document.getElementById('refinanceDollarValueILS');
+
+            // Comps elements
+            const addressInput = document.getElementById('addressInput');
+            const estimatedSalePrice = document.getElementById('estimatedSalePrice');
+            const estimatedRentalPrice = document.getElementById('estimatedRentalPrice');
 
 
             const inputElements = [
@@ -1114,6 +1138,73 @@
             }
 
             /**
+             * Fetches comps data from LLM based on address.
+             * @param {string} address The address to get comps for.
+             */
+            async function getCompsData(address) {
+                if (!address) {
+                    estimatedSalePrice.textContent = 'הזן כתובת';
+                    estimatedRentalPrice.textContent = 'הזן כתובת';
+                    return;
+                }
+
+                estimatedSalePrice.textContent = 'טוען...';
+                estimatedRentalPrice.textContent = 'טוען...';
+
+                const prompt = `Given a renovated property at "${address}" with identical features (room size, bathrooms, plot) within a half-mile radius, based on data from the last six months, provide an estimated sale price and an estimated rental price. Respond in JSON format with 'salePrice' (e.g., "$500,000") and 'rentalPrice' (e.g., "$3,000/month") keys. If data is unavailable or cannot be estimated, return "N/A" for the respective price.`;
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = {
+                    contents: chatHistory,
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                "salePrice": { "type": "STRING" },
+                                "rentalPrice": { "type": "STRING" }
+                            },
+                            "propertyOrdering": ["salePrice", "rentalPrice"]
+                        }
+                    }
+                };
+
+                const apiKey = ""; // Leave as-is for Canvas to provide
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const jsonString = result.candidates[0].content.parts[0].text;
+                        const parsedJson = JSON.parse(jsonString);
+
+                        estimatedSalePrice.textContent = parsedJson.salePrice || 'N/A';
+                        estimatedRentalPrice.textContent = parsedJson.rentalPrice || 'N/A';
+                    } else {
+                        estimatedSalePrice.textContent = 'שגיאה בטעינה';
+                        estimatedRentalPrice.textContent = 'שגיאה בטעינה';
+                        console.error('Unexpected LLM response structure:', result);
+                    }
+                } catch (error) {
+                    estimatedSalePrice.textContent = 'שגיאה: ' + error.message;
+                    estimatedRentalPrice.textContent = 'שגיאה: ' + error.message;
+                    console.error('Error fetching comps data:', error);
+                }
+            }
+
+
+            /**
              * Sets default values for specified input fields and triggers recalculations.
              */
             function resetToDefaults() {
@@ -1126,6 +1217,7 @@
                 loanAmountActualInput.value = '0';
                 loanInterestRateInput.value = '0';
                 refinancePercentageInput.value = '75'; // Set default for new input (H3)
+                addressInput.value = ''; // Clear address input on reset
 
                 // Save the new default values to localStorage
                 inputElements.forEach(saveInputValue);
@@ -1137,6 +1229,8 @@
                 updateC1D1(); // Ensure C1/D1 are updated if B1 changed
                 updateA2B2C2(); // Ensure A2/B2/C2 are updated if D2 changed
                 updateH5(); // Call H5 update after reset
+                estimatedSalePrice.textContent = 'טוען...'; // Reset comps display
+                estimatedRentalPrice.textContent = 'טוען...'; // Reset comps display
             }
 
             // Load saved values or set defaults on page load
@@ -1149,6 +1243,7 @@
             loadInputValue(b3Input, '0'); // Default B3 can be 0 or synced with B1 initially
             loadInputValue(d3Input, '0'); // Default D3 can be 0
             loadInputValue(refinancePercentageInput, '75'); // Load for new input (H3)
+            loadInputValue(addressInput, ''); // Load address input
 
             // Add event listeners to save input values and trigger calculations
             inputElements.forEach(input => {
@@ -1191,6 +1286,9 @@
                 });
             });
 
+            // Add event listener for address input
+            addressInput.addEventListener('change', () => getCompsData(addressInput.value)); // Use 'change' to trigger on blur/enter
+
             // Add event listener for the reset button
             resetButton.addEventListener('click', resetToDefaults);
 
@@ -1199,6 +1297,7 @@
             updateA3C3(); // Initial call for A3 and C3
             updateH3(); // Initial call for H3 (refinance)
             updateH5(); // Initial call for H5 (C1/F1)
+            getCompsData(addressInput.value); // Initial call for comps data
         });
     </script>
 </body>
