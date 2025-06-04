@@ -911,6 +911,7 @@
         <div class="comps-button-container">
             <button id="getCompsButton" class="comps-button">בצע</button>
         </div>
+        <textarea id="geminiRawResponse" rows="5" cols="50" style="width: 100%; margin-top: 10px; font-size: 0.8em; direction: ltr; text-align: left; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 5px; padding: 5px;" placeholder="תשובה גולמית מ-Gemini תופיע כאן..."></textarea>
     </div>
     <div class="footer-links-container">
         <div class="footer-link-box">
@@ -962,6 +963,7 @@
             const estimatedSalePrice = document.getElementById('estimatedSalePrice');
             const estimatedRentalPrice = document.getElementById('estimatedRentalPrice');
             const getCompsButton = document.getElementById('getCompsButton'); // Get comps button
+            const geminiRawResponse = document.getElementById('geminiRawResponse'); // New textarea for raw response
 
 
             const inputElements = [
@@ -1222,11 +1224,13 @@
                 if (!address) {
                     estimatedSalePrice.textContent = ''; // Clear on empty address
                     estimatedRentalPrice.textContent = ''; // Clear on empty address
+                    geminiRawResponse.value = ''; // Clear raw response
                     return;
                 }
 
                 estimatedSalePrice.textContent = 'טוען...';
                 estimatedRentalPrice.textContent = 'טוען...';
+                geminiRawResponse.value = 'טוען...'; // Show loading in raw response area
 
                 const prompt = `תן לי comps לנכסים בעלי מאפיינים דומים (מספר חדרים, אמבטיות, מגרש, שנת בניה וכ' ככל שתמצא לנכון) שנמכרו או הושכרו בחצי שנה האחרונה ברדיוס של חצי מייל מהנכס אך לא חוצים זיפ רוד. כתובת הנכס: "${address}"`;
 
@@ -1259,9 +1263,8 @@
                     });
 
                     const rawText = await response.text(); // Get raw text first
+                    geminiRawResponse.value = rawText; // Display raw text in the textarea
                     console.log("Full Gemini API response (raw text):", rawText); // Log raw text
-                    // Removed alert here as requested
-                    // alert("תשובת Gemini (טקסט גולמי):\n\n" + rawText); // Display raw text in alert
 
                     try {
                         const result = JSON.parse(rawText); // Try parsing the raw text
@@ -1295,6 +1298,7 @@
                 } catch (error) {
                     estimatedSalePrice.textContent = 'שגיאה: ' + error.message;
                     estimatedRentalPrice.textContent = 'שגיאה: ' + error.message;
+                    geminiRawResponse.value = 'שגיאה: ' + error.message; // Display error in raw response area
                     console.error('Error fetching comps data:', error);
                 }
             }
@@ -1327,6 +1331,7 @@
                 updateH5(); // Call H5 update after reset
                 estimatedSalePrice.textContent = ''; // Reset comps display
                 estimatedRentalPrice.textContent = ''; // Reset comps display
+                geminiRawResponse.value = ''; // Clear raw response area
             }
 
             // Load saved values or set defaults on page load
