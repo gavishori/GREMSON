@@ -14,46 +14,56 @@
         }
         .header-container {
             display: flex;
-            justify-content: space-between; /* Space out items */
+            justify-content: center; /* Center the header content */
             align-items: center; /* Vertically align items */
-            margin-bottom: 30px;
+            margin-bottom: 5px; /* Reduced margin to bring clocks closer */
             padding-bottom: 10px;
             border-bottom: 2px solid #3498db; /* Blue underline */
+        }
+        .header-title-logo {
+            display: flex;
+            align-items: center;
+            flex-grow: 1; /* Allow title and logo to take available space */
+            justify-content: center; /* Center the title */
         }
         h1 {
             color: #191970; /* Dark blue for heading */
             text-align: center;
-            margin: 0 auto; /* Center the heading within its flex item */
+            margin: 0; /* Remove default margin */
             flex-grow: 1; /* Allow heading to take available space */
         }
-        .clocks-container {
+        .logo {
+            display: none; /* Hide the logo as requested */
+        }
+        .clocks-row-container { /* New container for clocks to be on one line */
             display: flex;
-            flex-direction: column; /* Stack clocks vertically */
-            align-items: flex-end; /* Align clocks to the right within their container */
-            margin-left: 20px; /* Space from the heading */
-            /* Added padding to give it a bit more visual "stretch" */
-            padding-left: 10px;
-            padding-right: 10px;
+            justify-content: center; /* Center the clocks */
+            width: 100%; /* Take full width below the header */
+            margin-bottom: 20px; /* Space below clocks */
+            padding-right: 0; /* No padding needed for centering */
+            box-sizing: border-box; /* Include padding in width */
+            gap: 20px; /* Space between clocks (approx 10 spaces) */
         }
         .online-clock {
             color: #191970; /* Dark blue for clock */
-            font-size: 1.2em;
-            font-weight: bold;
+            font-size: 0.9em; /* Smaller font size */
+            font-weight: normal; /* Not bold */
             white-space: nowrap; /* Prevent wrapping */
             display: flex; /* Use flex to align label and time */
-            justify-content: space-between; /* Pushes label and time to opposite ends */
-            width: 100%; /* Make it take full width of its container */
+            flex-direction: row; /* Keep label and time on one line */
+            align-items: baseline; /* Align text baselines */
         }
         .clock-label {
             direction: rtl; /* Ensure label is RTL */
             text-align: right; /* Align label text to the right */
             flex-shrink: 0; /* Prevent label from shrinking */
+            margin-left: 5px; /* Space after the label (e.g., "שעון ישראל:") */
         }
         .clock-time {
             direction: ltr; /* Ensure time is LTR */
             text-align: left; /* Align time text to the left */
             flex-grow: 1; /* Allow time to take remaining space */
-            margin-left: 5px; /* Small space between label and time */
+            margin-left: 5px; /* Single space after colon */
         }
         .subheading-box { /* Style for the subheading box */
             background-color: #ecf0f1; /* Light grey background for the box */
@@ -77,13 +87,32 @@
             font-size: 1.1em; /* Ensure consistent font size */
             font-weight: bold; /* Ensure consistent font weight */
         }
+        /* New styles for table containers */
+        .table-wrapper {
+            background-color: #ffffff; /* Default white background for wrappers */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .table-wrapper.main-table {
+            background-color: #e6f7ff; /* Light blue */
+        }
+        .table-wrapper.investment-table-wrapper {
+            background-color: #e0ffe0; /* Light green */
+            flex: 1; /* Allow to grow in flex container */
+        }
+        .table-wrapper.loan-table-wrapper {
+            background-color: #fffbe6; /* Light yellow */
+            flex: 1; /* Allow to grow in flex container */
+        }
+
         table {
             width: 100%;
             border-collapse: collapse; /* Ensures borders are collapsed for a clean grid */
-            margin-top: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for table */
-            border-radius: 8px; /* Rounded corners for the table container */
-            overflow: hidden; /* Ensures rounded corners apply to content */
+            /* Removed direct box-shadow and border-radius from table, moved to wrapper */
+            margin-top: 0; /* Remove top margin as wrapper handles spacing */
         }
         th, td {
             border: 1px solid #cccccc; /* Changed to a slightly darker border for clearer grid lines */
@@ -234,11 +263,9 @@
         }
         /* Investment table styling */
         .investment-table {
-            flex: 1; /* Allow table to grow and shrink, taking equal space */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for table */
-            border-radius: 8px; /* Rounded corners for the table container */
-            overflow: hidden; /* Ensures rounded corners apply to content */
+            width: 100%; /* Ensure table fills its wrapper */
             border-collapse: collapse;
+            /* Removed box-shadow, border-radius, overflow from here as it's on the wrapper */
         }
         .investment-table th, .investment-table td {
             white-space: nowrap; /* Prevent text wrapping in cells */
@@ -255,7 +282,7 @@
         .investment-table tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-        tr:hover {
+        .investment-table tr:hover {
             background-color: #eaf2f8;
         }
         /* Style for the investment amount input fields (similar to editable-price-input) */
@@ -278,11 +305,9 @@
         }
         /* Loan details table styling */
         .loan-details-table {
-            flex: 1; /* Allow table to grow and shrink, taking equal space */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-            border-radius: 8px; /* Rounded corners */
-            overflow: hidden; /* Ensures rounded corners apply to content */
+            width: 100%; /* Ensure table fills its wrapper */
             border-collapse: collapse;
+            /* Removed box-shadow, border-radius, overflow from here as it's on the wrapper */
         }
         .loan-details-table th, .loan-details-table td {
             border: 1px solid #cccccc;
@@ -382,16 +407,61 @@
         .reset-button:hover {
             background-color: #d32f2f; /* Darker red on hover */
         }
+        /* Footer links styling */
+        .footer-links-container {
+            display: flex;
+            justify-content: center; /* Center the links */
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            gap: 30px; /* Space between links */
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ccc;
+        }
+        .footer-link-box {
+            background-color: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            font-size: 0.9em; /* Smaller font size for footer links */
+            font-weight: bold;
+            color: #191970;
+            text-decoration: none; /* Remove underline from links */
+            transition: background-color 0.3s ease;
+        }
+        .footer-link-box:hover {
+            background-color: #dbe4e6;
+        }
+        .footer-link-box a {
+            color: #191970; /* Ensure link text is dark blue */
+            text-decoration: none; /* Remove underline */
+        }
+
         /* Responsive adjustments */
         @media (max-width: 600px) {
             .header-container {
                 flex-direction: column; /* Stack header items on small screens */
                 align-items: center; /* Center items when stacked */
             }
-            .clocks-container {
+            .header-title-logo {
+                flex-direction: column;
+                justify-content: center;
+            }
+            .logo {
                 margin-left: 0;
-                margin-top: 10px; /* Add space between heading and clock */
+                margin-bottom: 10px; /* Space between logo and title */
+            }
+            .clocks-row-container {
+                flex-direction: column; /* Stack clocks vertically on small screens */
                 align-items: center; /* Center clocks when stacked */
+                margin-left: 0;
+                padding-right: 0;
+                gap: 10px;
+            }
+            .online-clock {
+                width: 100%; /* Take full width */
+                justify-content: center; /* Center content within clock */
             }
             .dollar-rate-container {
                 flex-direction: column; /* Stack columns on small screens */
@@ -405,6 +475,9 @@
             }
             .dollar-rate-box input[type="number"] {
                 width: 80%; /* Adjust input width for small screens */
+            }
+            .table-wrapper {
+                padding: 10px; /* Adjust padding for small screens */
             }
             table {
                 display: block; /* Ensure table maintains block display */
@@ -447,16 +520,6 @@
                 width: 100%; /* ודא שהאינפוטים תופסים את כל הרוחב הזמין בתוך הקונטיינר שלהם */
                 box-sizing: border-box; /* חשוב כדי שהפאדינג לא יגרום לגלישה */
                 text-align: right; /* ודא שגם בתוך האינפוט הטקסט מיושר לימין */
-            }
-            /* תיקון עבור ה-cell-label הקטנים (A1, B1, C1 וכו') */
-            .cell-label {
-                position: absolute; /* מקם אותם באופן אבסולוטי */
-                left: 5px; /* 5 פיקסלים מהשמאל של התא */
-                bottom: 5px; /* 5 פיקסלים מהתחתית של התא */
-                font-size: 0.7em;
-                color: #191970; /* Dark blue for cell labels */
-                z-index: 10; /* ודא שהם מעל אלמנטים אחרים אם יש חפיפה */
-                direction: ltr; /* החזר את זה רק עבור התווית הספציפית הזו */
             }
             /* Apply light red background to specific cells on small screens */
             td[data-label="סכום הרווח"],
@@ -511,123 +574,132 @@
                 display: block;
                 width: 100%;
             }
+            .footer-links-container {
+                flex-direction: column;
+                gap: 15px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="header-container">
-        <h1>GREMSON - מחשבון עסקה</h1>
-        <div class="clocks-container">
-            <div class="online-clock">
-                <span class="clock-label">שעון ישראל:</span>
-                <span id="israelTimeDisplay" class="clock-time"></span>
-            </div>
-            <div class="online-clock">
-                <span class="clock-label">שעון מזרח ארה"ב:</span>
-                <span id="easternTimeDisplay" class="clock-time"></span>
-            </div>
+        <div class="header-title-logo">
+            <img src="uploaded:תמונה1.jpg-0602d63f-d686-4323-b2b7-a5ff02ea1ba0" alt="GREMSON Logo" class="logo">
+            <h1>GREMSON - מחשבון עסקה</h1>
+        </div>
+    </div>
+    <div class="clocks-row-container">
+        <div class="online-clock">
+            <span class="clock-label">שעון ישראל:</span>
+            <span id="israelTimeDisplay" class="clock-time"></span>
+        </div>
+        <div class="online-clock">
+            <span class="clock-label">שעון מזרח ארה"ב:</span>
+            <span id="easternTimeDisplay" class="clock-time"></span>
         </div>
     </div>
     <div class="subheading-box">
         <h2>חישוב כדאיות</h2>
     </div>
-    <table>
-        <thead>
-            <tr>
-                <th>השקעה</th>
-                <th>מחיר מכירה</th>
-                <th>סכום הרווח</th>
-                <th>אחוז הרווח</th>
-                <th>תיאור</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td data-label="השקעה" class="equity-cell">
-                    <span id="a1Value">100,000</span>
-                </td>
-                <td data-label="מחיר מכירה">
-                    <div class="input-with-symbol-container">
-                        <input type="number" class="editable-price-input" id="b1Input" value="120000" step="5000">
-                        <span class="symbol-left">$</span>
-                    </div>
-                </td>
-                <td data-label="סכום הרווח" class="profit-in-dollars-cell">
-                    <div class="display-currency-cell">
-                        <div>
-                            <span id="c1Value">20,000</span>
+    <div class="table-wrapper main-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>השקעה</th>
+                    <th>מחיר מכירה</th>
+                    <th>סכום הרווח</th>
+                    <th>אחוז הרווח</th>
+                    <th>תיאור</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td data-label="השקעה" class="equity-cell">
+                        <span id="a1Value">100,000</span>
+                    </td>
+                    <td data-label="מחיר מכירה">
+                        <div class="input-with-symbol-container">
+                            <input type="number" class="editable-price-input" id="b1Input" value="120000" step="5000">
                             <span class="symbol-left">$</span>
                         </div>
-                        <div class="ils-container">
-                            <span id="c1ValueILS" class="ils-value"></span><span class="ils-symbol">ש"ח</span>
+                    </td>
+                    <td data-label="סכום הרווח" class="profit-in-dollars-cell">
+                        <div class="display-currency-cell">
+                            <div>
+                                <span id="c1Value">20,000</span>
+                                <span class="symbol-left">$</span>
+                            </div>
+                            <div class="ils-container">
+                                <span id="c1ValueILS" class="ils-value"></span><span class="ils-symbol">ש"ח</span>
+                            </div>
                         </div>
-                    </div>
-                </td>
-                <td data-label="אחוז הרווח" class="profit-in-dollars-cell">
-                    <div class="input-with-symbol-container">
-                        <span id="d1Value">20</span>
-                        <span class="symbol-left">%</span>
-                    </div>
-                </td>
-                <td data-label="תיאור">אחוז הרווח לפי מחיר מכירה / השקעה</td>
-            </tr>
-            <tr>
-                <td data-label="השקעה" class="equity-cell">
-                    <span id="a2Value">50,000</span>
-                </td>
-                <td data-label="מחיר מכירה" class="profit-in-dollars-cell">
-                    <span id="b2Value">65,000</span>
-                </td>
-                <td data-label="סכום הרווח" class="profit-in-dollars-cell">
-                    <div class="display-currency-cell">
-                        <div>
-                            <span id="c2Value">15,000</span>
+                    </td>
+                    <td data-label="אחוז הרווח" class="profit-in-dollars-cell">
+                        <div class="input-with-symbol-container">
+                            <span id="d1Value">20</span>
+                            <span class="symbol-left">%</span>
+                        </div>
+                    </td>
+                    <td data-label="תיאור">אחוז הרווח לפי מחיר מכירה / השקעה</td>
+                </tr>
+                <tr>
+                    <td data-label="השקעה" class="equity-cell">
+                        <span id="a2Value">50,000</span>
+                    </td>
+                    <td data-label="מחיר מכירה" class="profit-in-dollars-cell">
+                        <span id="b2Value">65,000</span>
+                    </td>
+                    <td data-label="סכום הרווח" class="profit-in-dollars-cell">
+                        <div class="display-currency-cell">
+                            <div>
+                                <span id="c2Value">15,000</span>
+                                <span class="symbol-left">$</span>
+                            </div>
+                            <div class="ils-container">
+                                <span id="c2ValueILS" class="ils-value"></span><span class="ils-symbol">ש"ח</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="אחוז הרווח">
+                        <div class="input-with-symbol-container">
+                            <input type="number" class="editable-percentage-input" id="d2Input" value="30" step="1">
+                            <span class="symbol-left">%</span>
+                        </div>
+                    </td>
+                    <td data-label="תיאור">כמה צריך להיות מחיר המכירה לפי אחוז הרווח הנדרש בהתאם להשקעה</td>
+                </tr>
+                <tr>
+                    <td data-label="השקעה" class="equity-cell">
+                        <span id="a3Value"></span>
+                    </td>
+                    <td data-label="מחיר מכירה">
+                        <div class="input-with-symbol-container">
+                            <input type="number" class="editable-price-input" id="b3Input" step="5000">
                             <span class="symbol-left">$</span>
                         </div>
-                        <div class="ils-container">
-                            <span id="c2ValueILS" class="ils-value"></span><span class="ils-symbol">ש"ח</span>
+                    </td>
+                    <td data-label="סכום הרווח" class="profit-in-dollars-cell">
+                        <div class="display-currency-cell">
+                            <div>
+                                <span id="c3Value"></span>
+                                <span class="symbol-left">$</span>
+                            </div>
+                            <div class="ils-container">
+                                <span id="c3ValueILS" class="ils-value"></span><span class="ils-symbol">ש"ח</span>
+                            </div>
                         </div>
-                    </div>
-                </td>
-                <td data-label="אחוז הרווח">
-                    <div class="input-with-symbol-container">
-                        <input type="number" class="editable-percentage-input" id="d2Input" value="30" step="1">
-                        <span class="symbol-left">%</span>
-                    </div>
-                </td>
-                <td data-label="תיאור">כמה צריך להיות מחיר המכירה לפי אחוז הרווח הנדרש בהתאם להשקעה</td>
-            </tr>
-            <tr>
-                <td data-label="השקעה" class="equity-cell">
-                    <span id="a3Value"></span>
-                </td>
-                <td data-label="מחיר מכירה">
-                    <div class="input-with-symbol-container">
-                        <input type="number" class="editable-price-input" id="b3Input" step="5000">
-                        <span class="symbol-left">$</span>
-                    </div>
-                </td>
-                <td data-label="סכום הרווח" class="profit-in-dollars-cell">
-                    <div class="display-currency-cell">
-                        <div>
-                            <span id="c3Value"></span>
-                            <span class="symbol-left">$</span>
+                    </td>
+                    <td data-label="אחוז הרווח">
+                        <div class="input-with-symbol-container">
+                            <input type="number" class="editable-percentage-input" id="d3Input" step="1">
+                            <span class="symbol-left">%</span>
                         </div>
-                        <div class="ils-container">
-                            <span id="c3ValueILS" class="ils-value"></span><span class="ils-symbol">ש"ח</span>
-                        </div>
-                    </div>
-                </td>
-                <td data-label="אחוז הרווח">
-                    <div class="input-with-symbol-container">
-                        <input type="number" class="editable-percentage-input" id="d3Input" step="1">
-                        <span class="symbol-left">%</span>
-                    </div>
-                </td>
-                <td data-label="תיאור">כמה צריכה להיות ההשקעה לפי אחוז הרווח הנדרש בהתאם למכירה</td>
-            </tr>
-        </tbody>
-    </table>
+                    </td>
+                    <td data-label="תיאור">כמה צריכה להיות ההשקעה לפי אחוז הרווח הנדרש בהתאם למכירה</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
     <div class="dollar-rate-container">
         <div class="dollar-rate-box">
             <span>שער הדולר:</span>
@@ -639,107 +711,119 @@
         <h3>מימון</h3>
     </div>
     <div class="tables-row-container">
-        <table class="investment-table">
-            <thead>
-                <tr>
-                    <th>השקעה כספית</th>
-                    <th>סה"כ $</th>
-                    <th>אחוז ההשקעה</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td data-label="השקעה כספית">הון עצמי</td>
-                    <td data-label="סה&quot;כ $">
-                        <div class="input-with-symbol-container investment-total-dollars-input">
-                            <input type="number" class="investment-amount-input" id="equityInvestmentInput" step="5000">
-                            <span class="symbol-left">$</span>
-                        </div>
-                    </td>
-                    <td data-label="אחוז ההשקעה" class="profit-in-dollars-cell">
-                        <div class="display-currency-cell">
-                            <span></span>
-                            <span class="symbol-left">%</span>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td data-label="השקעה כספית">הלוואה</td>
-                    <td data-label="סה&quot;כ $" class="profit-in-dollars-cell">
-                        <div class="display-currency-cell">
-                            <div>
-                                <span id="loanInvestmentDisplay"></span> <span class="symbol-left">$</span>
+        <div class="table-wrapper investment-table-wrapper">
+            <table class="investment-table">
+                <thead>
+                    <tr>
+                        <th>השקעה כספית</th>
+                        <th>סה"כ $</th>
+                        <th>אחוז ההשקעה</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td data-label="השקעה כספית">הון עצמי</td>
+                        <td data-label="סה&quot;כ $">
+                            <div class="input-with-symbol-container investment-total-dollars-input">
+                                <input type="number" class="investment-amount-input" id="equityInvestmentInput" step="5000">
+                                <span class="symbol-left">$</span>
                             </div>
-                            <div class="ils-container">
-                                <span id="loanInvestmentDisplayILS" class="ils-value"></span><span class="ils-symbol">ש"ח</span>
+                        </td>
+                        <td data-label="אחוז ההשקעה" class="profit-in-dollars-cell">
+                            <div class="display-currency-cell">
+                                <span></span>
+                                <span class="symbol-left">%</span>
                             </div>
-                        </div>
-                    </td>
-                    <td data-label="אחוז ההשקעה" class="profit-in-dollars-cell">
-                        <div class="display-currency-cell">
-                            <span></span>
-                            <span class="symbol-left">%</span>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td data-label="השקעה כספית">refinance</td>
-                    <td data-label="סה&quot;כ $" class="profit-in-dollars-cell">
-                        <div class="display-currency-cell">
-                            <div>
-                                <span id="refinanceDollarValue"></span> <span class="symbol-left">$</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td data-label="השקעה כספית">הלוואה</td>
+                        <td data-label="סה&quot;כ $" class="profit-in-dollars-cell">
+                            <div class="display-currency-cell">
+                                <div>
+                                    <span id="loanInvestmentDisplay"></span> <span class="symbol-left">$</span>
+                                </div>
+                                <div class="ils-container">
+                                    <span id="loanInvestmentDisplayILS" class="ils-value"></span><span class="ils-symbol">ש"ח</span>
+                                </div>
                             </div>
-                            <div class="ils-container">
-                                <span id="refinanceDollarValueILS" class="ils-value"></span><span class="ils-symbol">ש"ח</span>
+                        </td>
+                        <td data-label="אחוז ההשקעה" class="profit-in-dollars-cell">
+                            <div class="display-currency-cell">
+                                <span></span>
+                                <span class="symbol-left">%</span>
                             </div>
-                        </div>
-                    </td>
-                    <td data-label="אחוז ההשקעה">
-                        <div class="input-with-symbol-container">
-                            <input type="number" class="editable-percentage-input" id="refinancePercentageInput" step="1">
-                            <span class="symbol-left">%</span>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="loan-details-table">
-            <thead>
-                <tr>
-                    <th>פרטי הלוואה</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td data-label="סכום ההלוואה">סכום ההלוואה</td>
-                    <td data-label="סכום ההלוואה בפועל">
-                        <div class="input-with-symbol-container loan-amount-input-container">
-                            <input type="number" class="loan-amount-input" id="loanAmountActualInput" value="10000" step="5000">
-                            <span class="symbol-left">$</span>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td data-label="ריבית">ריבית ישרה ולא ריבית דריבית</td>
-                    <td data-label="אחוז ריבית">
-                        <div class="input-with-symbol-container loan-interest-input-container">
-                            <input type="number" class="loan-interest-input" id="loanInterestRateInput" value="10" step="1">
-                            <span class="symbol-left">%</span>
-                        </div>
-                    </td>
-                </tr>
-                <tr class="profit-in-dollars-cell">
-                    <td data-label="אחוז הרווח על ההשקעה">אחוז הרווח על ההשקעה</td>
-                    <td data-label="אחוז הרווח על ההשקעה">
-                        <div class="display-currency-cell">
-                            <span id="h3ValueLoanDisplay"></span>
-                            <span class="symbol-left">%</span>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td data-label="השקעה כספית">refinance</td>
+                        <td data-label="סה&quot;כ $" class="profit-in-dollars-cell">
+                            <div class="display-currency-cell">
+                                <div>
+                                    <span id="refinanceDollarValue"></span> <span class="symbol-left">$</span>
+                                </div>
+                                <div class="ils-container">
+                                    <span id="refinanceDollarValueILS" class="ils-value"></span><span class="ils-symbol">ש"ח</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-label="אחוז ההשקעה">
+                            <div class="input-with-symbol-container">
+                                <input type="number" class="editable-percentage-input" id="refinancePercentageInput" step="1">
+                                <span class="symbol-left">%</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="table-wrapper loan-table-wrapper">
+            <table class="loan-details-table">
+                <thead>
+                    <tr>
+                        <th>פרטי הלוואה</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td data-label="סכום ההלוואה">סכום ההלוואה</td>
+                        <td data-label="סכום ההלוואה בפועל">
+                            <div class="input-with-symbol-container loan-amount-input-container">
+                                <input type="number" class="loan-amount-input" id="loanAmountActualInput" value="10000" step="5000">
+                                <span class="symbol-left">$</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td data-label="ריבית">ריבית ישרה ולא ריבית דריבית</td>
+                        <td data-label="אחוז ריבית">
+                            <div class="input-with-symbol-container loan-interest-input-container">
+                                <input type="number" class="loan-interest-input" id="loanInterestRateInput" value="10" step="1">
+                                <span class="symbol-left">%</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="profit-in-dollars-cell">
+                        <td data-label="אחוז הרווח על ההשקעה">אחוז הרווח על ההשקעה</td>
+                        <td data-label="אחוז הרווח על ההשקעה">
+                            <div class="display-currency-cell">
+                                <span id="h3ValueLoanDisplay"></span>
+                                <span class="symbol-left">%</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="footer-links-container">
+        <div class="footer-link-box">
+            <a href="https://gengine.co/home" target="_blank">גרמסונית</a>
+        </div>
+        <div class="footer-link-box">
+            <a href="https://gremson.com/" target="_blank">כרטיס ביקור GREMSON LLC</a>
+        </div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
