@@ -1224,7 +1224,8 @@
                 estimatedSalePrice.textContent = 'טוען...';
                 estimatedRentalPrice.textContent = 'טוען...';
 
-                const prompt = `Given a renovated property at "${address}" with identical features (room size, bathrooms, plot) within a half-mile radius, based on data from the last six months, provide an estimated sale price and an estimated rental price. Respond in JSON format with 'salePrice' (e.g., "$500,000") and 'rentalPrice' (e.g., "$3,000/month") keys. If data is unavailable or cannot be estimated, return "N/A" for the respective price.`;
+                // Updated prompt as per user's request
+                const prompt = `תן לי comps לנכסים בעלי מאפיינים דומים (מספר חדרים, אמבטיות, מגרש, שנת בניה וכ' ככל שתמצא לנכון) שנמכרו או הושכרו בחצי שנה האחרונה ברדיוס של חצי מייל מהנכס אך לא חוצים זיפ רוד. את התשובות אתה מחזיר לטבלה בפרויקט בהתאמה: מכירה למכירה - השכרה להשכרה. כתובת הנכס: "${address}"`;
 
                 let chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
@@ -1367,7 +1368,7 @@
                     // Open Gemini in a new tab
                     window.open('https://gemini.google.com/app?utm_source=hpp&utm_medium=owned&utm_campaign=2_5_pro_global_callout_EMEA', '_blank');
                     // Inform the user to manually paste the prompt
-                    console.log("Prompt for Gemini (copy and paste):", `Given a renovated property at "${address}" with identical features (room size, bathrooms, plot) within a half-mile radius, based on data from the last six months, provide an estimated sale price and an estimated rental price. Respond in JSON format with 'salePrice' (e.g., "$500,000") and 'rentalPrice' (e.g., "$3,000/month") keys. If data is unavailable or cannot be estimated, return "N/A" for the respective price.`);
+                    console.log("Prompt for Gemini (copy and paste):", `תן לי comps לנכסים בעלי מאפיינים דומים (מספר חדרים, אמבטיות, מגרש, שנת בניה וכ' ככל שתמצא לנכון) שנמכרו או הושכרו בחצי שנה האחרונה ברדיוס של חצי מייל מהנכס אך לא חוצים זיפ רוד. את התשובות אתה מחזיר לטבלה בפרויקט בהתאמה: מכירה למכירה - השכרה להשכרה. כתובת הנכס: "${address}"`);
                     // You might want to add a visible message to the user on the page itself, e.g.:
                     // alert("הדף של Gemini נפתח. אנא הדבק את השאלה מתיבת הקונסול (F12) לתיבת השיחה שם.");
                 } else {
