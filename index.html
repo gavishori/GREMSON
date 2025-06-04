@@ -883,8 +883,8 @@
             </table>
         </div>
     </div>
-    <div class="additional-right-box">
-        <h3>Comps</h3>
+    <div class="subheading-box"> <!-- New subheading box for Comps -->
+        <h2>Comps</h2>
     </div>
     <div class="comps-content-box">
         <div class="comps-input-container">
@@ -1357,7 +1357,20 @@
             });
 
             // Add event listener for comps button
-            getCompsButton.addEventListener('click', () => getCompsData(addressInput.value));
+            getCompsButton.addEventListener('click', () => {
+                const address = addressInput.value;
+                if (address) {
+                    getCompsData(address);
+                    // Open Gemini in a new tab
+                    window.open('https://gemini.google.com/app?utm_source=hpp&utm_medium=owned&utm_campaign=2_5_pro_global_callout_EMEA', '_blank');
+                    // Inform the user to manually paste the prompt
+                    console.log("Prompt for Gemini (copy and paste):", `Given a renovated property at "${address}" with identical features (room size, bathrooms, plot) within a half-mile radius, based on data from the last six months, provide an estimated sale price and an estimated rental price. Respond in JSON format with 'salePrice' (e.g., "$500,000") and 'rentalPrice' (e.g., "$3,000/month") keys. If data is unavailable or cannot be estimated, return "N/A" for the respective price.`);
+                    // You might want to add a visible message to the user on the page itself, e.g.:
+                    // alert("הדף של Gemini נפתח. אנא הדבק את השאלה מתיבת הקונסול (F12) לתיבת השיחה שם.");
+                } else {
+                    alert("אנא הזן כתובת כדי לקבל נתוני Comps.");
+                }
+            });
 
             // Add event listener for the reset button
             resetButton.addEventListener('click', resetToDefaults);
