@@ -218,7 +218,7 @@
             color: #191970; /* Dark blue for dollar rate box text */
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Subtle shadow */
             display: flex; /* Use flexbox for content inside the box */
-            align-items: center; /* Vertically align items */
+            align-items: center; /* Vertically align-items */
             gap: 10px; /* Space between label and input */
         }
         .dollar-rate-box input[type="number"] {
@@ -309,10 +309,13 @@
             font-weight: bold;
             color: #191970; /* Dark blue for additional box text */
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Subtle shadow */
-            display: inline-block; /* Make it an inline block to wrap content and align */
+            display: block; /* Changed to block */
+            width: fit-content; /* Shrink to fit content */
+            margin-right: auto; /* Push to right for RTL */
+            margin-left: 0; /* No left margin */
             margin-top: 15px; /* Space from the dollar rate box */
-            float: right; /* Align to the right */
-            clear: both; /* Clear floats above it */
+            margin-bottom: 15px; /* Space below for the next box */
+            clear: both; /* Clear any preceding floats */
         }
         .additional-right-box h3 { /* Style for content inside the new box */
             color: #191970; /* Dark blue for h3 inside box */
@@ -1364,13 +1367,11 @@
             getCompsButton.addEventListener('click', () => {
                 const address = addressInput.value;
                 if (address) {
+                    const promptText = `תן לי comps לנכסים בעלי מאפיינים דומים (מספר חדרים, אמבטיות, מגרש, שנת בניה וכ' ככל שתמצא לנכון) שנמכרו או הושכרו בחצי שנה האחרונה ברדיוס של חצי מייל מהנכס אך לא חוצים זיפ רוד. כתובת הנכס: "${address}"`;
+                    // Open Gemini in a new tab with the prompt pre-filled
+                    window.open(`https://gemini.google.com/app?q=${encodeURIComponent(promptText)}`, '_blank');
+                    // Trigger the LLM call to get data for the project's display fields
                     getCompsData(address);
-                    // Open Gemini in a new tab
-                    window.open('https://gemini.google.com/app?utm_source=hpp&utm_medium=owned&utm_campaign=2_5_pro_global_callout_EMEA', '_blank');
-                    // Inform the user to manually paste the prompt
-                    console.log("Prompt for Gemini (copy and paste):", `תן לי comps לנכסים בעלי מאפיינים דומים (מספר חדרים, אמבטיות, מגרש, שנת בניה וכ' ככל שתמצא לנכון) שנמכרו או הושכרו בחצי שנה האחרונה ברדיוס של חצי מייל מהנכס אך לא חוצים זיפ רוד. את התשובות אתה מחזיר לטבלה בפרויקט בהתאמה: מכירה למכירה - השכרה להשכרה. כתובת הנכס: "${address}"`);
-                    // You might want to add a visible message to the user on the page itself, e.g.:
-                    // alert("הדף של Gemini נפתח. אנא הדבק את השאלה מתיבת הקונסול (F12) לתיבת השיחה שם.");
                 } else {
                     alert("אנא הזן כתובת כדי לקבל נתוני Comps.");
                 }
