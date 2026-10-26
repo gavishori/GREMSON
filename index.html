@@ -698,15 +698,24 @@
 
             .side-nav { align-self: stretch; overflow-y: auto; }
 
-            .main { height: calc(100vh - 32px); overflow-y: auto; }
+            .main { height: calc(100vh - 32px); overflow-y: auto; overflow-x: hidden; }
 
             .view-panel:not(.view-active) { display: none; }
 
             .view-panel.view-active {
                 margin: 0;
                 min-height: 100%;
-                padding: 22px 28px;
+                padding: 14px 22px;
             }
+
+            /* צפיפות מותאמת למסך אחד בלי גלילה */
+            .view-active .sec-title { margin-bottom: 8px; }
+            .view-active .sec-sub { margin: 10px 0 6px; }
+            .view-active .table-wrapper { padding: 8px; margin-bottom: 8px; }
+            .view-active th, .view-active td { padding: 6px 10px; }
+            .view-active .dollar-rate-container { margin: 2px 0 4px; }
+            .view-active .dollar-rate-box { padding: 5px 12px; }
+            .view-active .comps-content-box { gap: 8px; padding: 10px; }
 
             .yield-calc.view-active .col-arrow { display: none; }
 
@@ -1990,7 +1999,38 @@
                 try { localStorage.setItem(KEY, view); } catch (e) {}
             }
 
-            buttons.forEach(b => b.addEventListener('click', () => show(b.dataset.target)));
+            // התאמה למסך: מקטינים את החלון הפעיל (אף פעם לא מגדילים) כך שייכנס בלי גלילה
+            const main = document.querySelector('.main');
+            const desktop = window.matchMedia('(min-width: 821px)');
+            const MIN_SCALE = 0.55;
+            let fitQueued = false;
+
+            function fit() {
+                fitQueued = false;
+                panels.forEach(p => { p.style.zoom = ''; });
+                if (!desktop.matches) return;
+                const panel = panels.find(p => p.classList.contains('view-active'));
+                if (!panel) return;
+                const needH = panel.scrollHeight, needW = panel.scrollWidth;
+                const haveH = main.clientHeight, haveW = main.clientWidth;
+                if (needH <= haveH && needW <= haveW) return;
+                const scale = Math.max(MIN_SCALE, Math.min(1, haveH / needH, haveW / needW));
+                panel.style.zoom = String(scale);
+            }
+
+            function queueFit() {
+                if (fitQueued) return;
+                fitQueued = true;
+                setTimeout(fit, 30);
+            }
+
+            window.addEventListener('resize', queueFit);
+            document.addEventListener('click', () => setTimeout(queueFit, 50));
+            document.addEventListener('input', queueFit);
+            window.addEventListener('load', queueFit);
+            window.__fitGremson = fit;
+
+            buttons.forEach(b => b.addEventListener('click', () => { show(b.dataset.target); queueFit(); }));
 
             let initial = 'deal';
             try { initial = localStorage.getItem(KEY) || 'deal'; } catch (e) {}
@@ -1998,6 +2038,7 @@
             const fromHash = panels.some(p => p.dataset.view === hashView);
             if (fromHash) initial = hashView;
             show(initial);
+            queueFit();
 
             // במובייל: קישור עמוק פותח את הקוביה המבוקשת וגולל אליה
             if (fromHash && window.matchMedia('(max-width: 820px)').matches) {
