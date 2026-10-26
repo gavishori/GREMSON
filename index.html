@@ -598,6 +598,35 @@
 
         .fc-badge { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
 
+        .fc-num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            box-sizing: border-box;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            color: #10264d;
+            font-size: 12px;
+            font-weight: 800;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+        }
+
+        .fc-num.small { width: 20px; height: 20px; font-size: 11px; box-shadow: none; }
+
+        .fc-sale {
+            width: 105px;
+            padding: 4px 6px;
+            border-radius: 7px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.95);
+            color: #1e3c72;
+            font: inherit;
+            font-size: 0.8rem;
+            direction: ltr;
+        }
+
         #fcMap {
             width: 100%;
             height: 100%;
@@ -1063,7 +1092,7 @@
             <div class="nav-group">חישובים</div>
             <button type="button" class="nav-item" data-target="deal"><span class="nav-ico">🏢</span><span class="nav-label">כדאיות עסקה ומימון</span></button>
             <button type="button" class="nav-item" data-target="comps"><span class="nav-ico">📍</span><span class="nav-label">Comps</span></button>
-            <button type="button" class="nav-item" data-target="foreclosure"><span class="nav-ico">🏚️</span><span class="nav-label">פורקלוז'ר</span></button>
+            <button type="button" class="nav-item" data-target="foreclosure"><span class="nav-ico">🏚️</span><span class="nav-label">Foreclosure</span></button>
             <button type="button" class="nav-item" data-target="yield"><span class="nav-ico">💰</span><span class="nav-label">מחשבון תשואה</span></button>
             <button type="button" class="nav-item" data-target="invest"><span class="nav-ico">🏗️</span><span class="nav-label">מחשבון השקעה</span></button>
 
@@ -1368,7 +1397,7 @@
                 </div>
             </section>
             <section class="panel view-panel" data-view="foreclosure">
-                <h2 class="sec-title">פורקלוז'ר - מכירות פומביות מהקאונטי</h2>
+                <h2 class="sec-title">Foreclosure - מכירות פומביות מהקאונטי</h2>
                 <div class="fc-layout">
                     <div class="fc-side">
                         <div class="fc-upload">
@@ -2843,6 +2872,27 @@
             const markers = new Map(); // row index -> marker
             let map = null, layer = null, geocodeRun = 0;
 
+            // מחיר מכירה בפועל (לא מגיע בקובץ) - מוקלד ידנית לתיקים שנמכרו ונשמר לפי מספר תיק
+            const SALE_STORE = 'foreclosure-sale-prices';
+            const salePrices = load(SALE_STORE, {});
+            let ranks = new Map(); // row index -> דירוג הפער (1 = הפער הקטן ביותר)
+
+            function saleGap(r) {
+                if (r.status !== 'Sold') return null;
+                const sale = salePrices[r.caseNumber], judgment = parseFloat(r.judgment);
+                if (!(sale > 0) || !(judgment > 0)) return null;
+                return Math.abs(sale - judgment);
+            }
+
+            function computeRanks() {
+                ranks = new Map();
+                if (!data) return;
+                data.rows.map((r, i) => ({ i, gap: saleGap(r) }))
+                    .filter(x => x.gap !== null)
+                    .sort((a, b) => a.gap - b.gap)
+                    .forEach((x, k) => ranks.set(x.i, k + 1));
+            }
+
             function statusInfo(status) {
                 if (STATUS_INFO[status]) return STATUS_INFO[status];
                 const others = Array.from(new Set(data.rows.map(r => r.status))).filter(s => !STATUS_INFO[s]);
@@ -2962,6 +3012,8 @@
                     <div class="row"><span>פסק דין סופי</span><span>${money(r.judgment)}</span></div>
                     <div class="row"><span>הצעת פתיחה</span><span>${money(r.openingBid)}</span></div>
                     <div class="row"><span>שווי שומה</span><span>${money(r.assessed)}</span></div>
+                    ${r.status === 'Sold' ? `<div class="row"><span>מחיר מכירה</span><span>${money(salePrices[r.caseNumber])}</span></div>
+                    <div class="row"><span>פער מפסק הדין</span><span>${saleGap(r) === null ? '—' : money(saleGap(r)) + ` (#${ranks.get(data.rows.indexOf(r))})`}</span></div>` : ''}
                     <div class="row"><span>הצעה מקס' של התובע</span><span>${money(r.maxBid)}</span></div>
                     <div class="row"><span>מס' תיק</span><span>${esc(r.caseNumber)}</span></div>
                     <div class="plaintiff">${esc(r.plaintiff)}</div>
@@ -2977,7 +3029,15 @@
             function addMarker(i) {
                 if (!map) return;
                 const r = data.rows[i];
-                const m = L.circleMarker([r.geo.lat, r.geo.lon], { radius: 8, color: '#fff', weight: 2, fillColor: statusInfo(r.status).color, fillOpacity: 0.95 })
+                const color = statusInfo(r.status).color;
+                const rank = ranks.get(i);
+                // תיק שנמכר ויש לו מחיר מכירה - נקודה ממוספרת לפי דירוג הפער
+                const m = (rank
+                    ? L.marker([r.geo.lat, r.geo.lon], {
+                        icon: L.divIcon({ className: '', html: `<span class="fc-num" style="background:${color}">${rank}</span>`, iconSize: [24, 24], iconAnchor: [12, 12], popupAnchor: [0, -10] }),
+                        zIndexOffset: 1000 - rank
+                    })
+                    : L.circleMarker([r.geo.lat, r.geo.lon], { radius: 8, color: '#fff', weight: 2, fillColor: color, fillOpacity: 0.95 }))
                     .bindPopup(() => popupHtml(r), { maxWidth: 300 })
                     .on('click', () => highlightRow(i));
                 markers.set(i, m);
@@ -2985,6 +3045,7 @@
             }
 
             function rebuildMarkers() {
+                computeRanks();
                 if (!map) return;
                 layer.clearLayers();
                 markers.clear();
@@ -3036,14 +3097,19 @@
                 const rows = data.rows.map((r, i) => ({ r, i })).filter(x => !hidden.has(x.r.status));
                 if (!rows.length) { el.innerHTML = '<div class="comp-note">אין תיקים בסטטוסים שנבחרו</div>'; return; }
                 el.innerHTML = `<table><thead><tr>
-                        <th>תאריך מכירה</th><th>כתובת</th><th>סטטוס</th><th>פסק דין</th><th>שומה</th><th>מקס' תובע</th>
+                        <th>תאריך מכירה</th><th>כתובת</th><th>סטטוס</th><th>מחיר מכירה</th><th>פסק דין</th><th>שומה</th><th>מקס' תובע</th>
                     </tr></thead><tbody>${rows.map(({ r, i }) => {
                         const info = statusInfo(r.status);
                         const noGeo = r.address && r.geo === null;
                         return `<tr data-i="${i}" class="${noGeo ? 'no-geo' : ''}">
                             <td data-label="תאריך מכירה" class="num">${esc(r.saleDate)}</td>
                             <td data-label="כתובת" class="addr" title="${noGeo ? 'הכתובת לא נמצאה על המפה' : ''}">${r.address ? esc(r.address) + (r.zip ? ' <small>' + esc(r.zip) + '</small>' : '') : '<span style="color:#9fb4dd">אין כתובת בקובץ</span>'}</td>
-                            <td data-label="סטטוס"><span class="fc-badge"><span class="fc-dot" style="background:${info.color}"></span>${esc(info.label)}</span></td>
+                            <td data-label="סטטוס"><span class="fc-badge">${ranks.has(i)
+                                ? `<span class="fc-num small" style="background:${info.color}">${ranks.get(i)}</span>`
+                                : `<span class="fc-dot" style="background:${info.color}"></span>`}${esc(info.label)}</span></td>
+                            <td data-label="מחיר מכירה">${r.status === 'Sold'
+                                ? `<input type="number" class="fc-sale" data-case="${esc(r.caseNumber)}" value="${salePrices[r.caseNumber] || ''}" placeholder="$" step="1000" min="0">`
+                                : '—'}</td>
                             <td data-label="פסק דין" class="num">${money(r.judgment)}</td>
                             <td data-label="שומה" class="num">${money(r.assessed)}</td>
                             <td data-label="מקס' תובע" class="num">${money(r.maxBid)}</td>
@@ -3115,11 +3181,24 @@
 
             $('fcResults').addEventListener('click', (e) => {
                 const tr = e.target.closest('tr[data-i]');
-                if (!tr) return;
+                if (!tr || e.target.closest('input')) return;
                 const i = Number(tr.dataset.i);
                 highlightRow(i);
                 const m = markers.get(i);
                 if (m && map) { map.setView(m.getLatLng(), Math.max(map.getZoom(), 15)); m.openPopup(); }
+            });
+
+            // הקלדת מחיר מכירה לתיק שנמכר: שומרים ומדרגים מחדש את הפערים
+            $('fcResults').addEventListener('change', (e) => {
+                const input = e.target.closest('.fc-sale');
+                if (!input) return;
+                const v = parseFloat(input.value);
+                if (v > 0) salePrices[input.dataset.case] = v; else delete salePrices[input.dataset.case];
+                save(SALE_STORE, salePrices);
+                const scrollTop = $('fcResults').scrollTop;
+                rebuildMarkers();
+                renderTable();
+                $('fcResults').scrollTop = scrollTop;
             });
 
             // "קומפס לנכס" בחלונית: ממלא את הכתובת בחלון Comps ועובר אליו
@@ -3219,7 +3298,7 @@
     <script>
         // עדכון עצמי: בכל פתיחה/חזרה לדף בודקים מול האתר אם יצאה גרסה חדשה, ואם כן טוענים מחדש פעם אחת.
         (function selfUpdate() {
-            const BUILD_ID = '2026-10-26-c';
+            const BUILD_ID = '2026-10-26-d';
             async function check() {
                 try {
                     const res = await fetch(location.pathname + '?_=' + Date.now(), { cache: 'no-store' });
