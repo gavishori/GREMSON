@@ -528,7 +528,7 @@
         /* ---- פורקלוז'ר: קובץ מהקאונטי על מפה, עם סינון לפי סטטוס ---- */
         .fc-layout {
             display: grid;
-            grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+            grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
             gap: 16px;
             align-items: stretch;
         }
@@ -592,6 +592,10 @@
 
         .fc-results { max-height: calc(100vh - 330px); min-height: 160px; }
 
+        .fc-results table { font-size: 0.76rem; }
+        .fc-results table th, .fc-results table td { padding: 5px 5px; }
+        .fc-results td.addr { min-width: 110px; }
+
         .fc-results tr.no-geo td.addr { color: #ff8f8f; }
 
         .fc-results tr.picked { background: rgba(255, 209, 102, 0.22); }
@@ -616,8 +620,8 @@
         .fc-num.small { width: 20px; height: 20px; font-size: 11px; box-shadow: none; }
 
         .fc-sale {
-            width: 105px;
-            padding: 4px 6px;
+            width: 78px;
+            padding: 3px 5px;
             border-radius: 7px;
             border: 1px solid rgba(255, 255, 255, 0.3);
             background: rgba(255, 255, 255, 0.95);
@@ -636,6 +640,38 @@
             overflow: hidden;
             z-index: 1;
         }
+
+        .crime-box {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 170px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            font-size: 0.78rem;
+            color: #fff;
+            background: rgba(15, 31, 61, 0.86);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+        }
+
+        .crime-box .chk { display: flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; }
+
+        .crime-opacity { display: flex; flex-direction: column; gap: 2px; }
+
+        .crime-opacity input { width: 100%; accent-color: #ffd166; }
+
+        .crime-legend { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; }
+
+        .crime-legend i { flex: 1; height: 8px; border-radius: 4px; background: linear-gradient(to left, #d7191c, #fdae61, #ffffbf, #a6d96a, #1a9641); }
+
+        .crime-status { font-size: 0.7rem; color: #ffd166; }
+        .crime-status:empty { display: none; }
+
+        .crime-tip { direction: rtl; text-align: right; font-size: 0.78rem; line-height: 1.4; }
 
         .fc-pop { direction: rtl; text-align: right; font-size: 0.82rem; line-height: 1.45; min-width: 220px; }
         .fc-pop b.addr { display: block; direction: ltr; text-align: left; font-size: 0.92rem; margin-bottom: 4px; }
@@ -1422,6 +1458,14 @@
                     </div>
                     <div class="comps-map-wrap">
                         <div id="fcMap" aria-label="מפת נכסים במכירה פומבית"></div>
+                        <div class="crime-box">
+                            <label class="chk"><input type="checkbox" id="crimeToggle" checked> פשיעה לפי שכונה</label>
+                            <label class="crime-opacity">שקיפות
+                                <input type="range" id="crimeOpacity" min="0" max="90" step="5" value="45">
+                            </label>
+                            <div class="crime-legend"><span>בטוח</span><i></i><span>מסוכן</span></div>
+                            <div id="crimeStatus" class="crime-status"></div>
+                        </div>
                         <div class="map-hint">לחיצה על נקודה מציגה את פרטי התיק</div>
                     </div>
                 </div>
@@ -3016,6 +3060,12 @@
                     <div class="row"><span>פער מפסק הדין</span><span>${saleGap(r) === null ? '—' : money(saleGap(r)) + ` (#${ranks.get(data.rows.indexOf(r))})`}</span></div>` : ''}
                     <div class="row"><span>הצעה מקס' של התובע</span><span>${money(r.maxBid)}</span></div>
                     <div class="row"><span>מס' תיק</span><span>${esc(r.caseNumber)}</span></div>
+                    ${(() => {
+                        const n = neighborhoodAt(r.geo);
+                        if (!n) return '';
+                        const safety = n.total > 0 ? `בטיחות ${neighborhoods.ranked - n.rank + 1}/${neighborhoods.ranked}` : 'אין נתונים';
+                        return `<div class="row"><span>שכונה</span><span>${esc(n.name)} · ${safety}</span></div>`;
+                    })()}
                     <div class="plaintiff">${esc(r.plaintiff)}</div>
                     <div class="links">
                         ${re.length >= 10 ? `<a href="https://paopropertysearch.coj.net/Basic/Detail.aspx?RE=${re}" target="_blank" rel="noopener">רשומת הנכס (PAO)</a>` : ''}
@@ -3068,6 +3118,180 @@
                 if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.08), { maxZoom: 15 });
             }
 
+            // ---------- שכבת פשיעה לפי שכונה ----------
+            // השכונות הרשמיות של העיר (206), ולכל אחת ספירת הדיווחים של משטרת ג'קסונוויל (JSO) ב-12 החודשים האחרונים.
+            // ציון = (אלימות x2 + רכוש) לקמ"ר; הצבע לפי דירוג יחסי בין השכונות: ירוק = הכי בטוח, אדום = הכי מסוכן.
+            const CRIME_STORE = 'crime-neighborhoods-v1';
+            const CRIME_PREFS = 'crime-layer-prefs';
+            const CRIME_TTL = 7 * 24 * 3600 * 1000;
+            const NB_URL = 'https://services1.arcgis.com/NXfNVaFp7QMxnE3j/arcgis/rest/services/Neighborhoods/FeatureServer/0/query';
+            const JSO_URL = 'https://services3.arcgis.com/7C7xW0yv6W8spzhp/arcgis/rest/services/Public_Transparency_Data_View/FeatureServer/0/query';
+            const VIOLENT = ['09A', '09B', '100', '120', '13A', '13B', '13C', '200', '520', '11A', '11B', '11C', '11D', '64A', '64B', '64X'];
+            const isProperty = (code) => /^23/.test(code) || ['220', '240', '280', '290', '210'].includes(code);
+
+            let crimeLayer = null, neighborhoods = null;
+            const crimePrefs = Object.assign({ on: true, opacity: 45 }, load(CRIME_PREFS, {}));
+
+            function ringArea(ring) { // שטח חתום (מעלות), שלילי = עם כיוון השעון
+                let a = 0;
+                for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) a += (ring[j][0] + ring[i][0]) * (ring[j][1] - ring[i][1]);
+                return a / 2;
+            }
+
+            function areaKm2(rings, lat) {
+                const deg2 = rings.reduce((s, r) => s - ringArea(r), 0); // טבעות חיצוניות עם כיוון השעון, חורים נגדו
+                return Math.abs(deg2) * 111.32 * 111.32 * Math.cos(lat * Math.PI / 180);
+            }
+
+            // טבעות בפורמט ArcGIS -> פוליגונים של Leaflet (טבעת עם כיוון השעון פותחת פוליגון, נגדו היא חור)
+            function toLatLngs(rings) {
+                const polys = [];
+                rings.forEach(r => {
+                    const ll = r.map(p => [p[1], p[0]]);
+                    if (ringArea(r) < 0 || !polys.length) polys.push([ll]);
+                    else polys[polys.length - 1].push(ll);
+                });
+                return polys;
+            }
+
+            function inRing(pt, ring) {
+                let inside = false;
+                for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+                    const [xi, yi] = ring[i], [xj, yj] = ring[j];
+                    if ((yi > pt[1]) !== (yj > pt[1]) && pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi) inside = !inside;
+                }
+                return inside;
+            }
+
+            function neighborhoodAt(geo) {
+                if (!neighborhoods || !geo) return null;
+                const pt = [geo.lon, geo.lat];
+                return neighborhoods.items.find(n => n.rings.filter(r => inRing(pt, r)).length % 2 === 1) || null;
+            }
+
+            async function loadNeighborhoods() {
+                const cached = load(CRIME_STORE, null);
+                if (cached && Date.now() - cached.fetchedAt < CRIME_TTL) return cached;
+                setCrimeStatus('טוען שכונות...');
+                const res = await fetch(NB_URL + '?where=1%3D1&outFields=CODENUM,NEIGHBORHO&outSR=4326&geometryPrecision=5&maxAllowableOffset=0.0002&f=json');
+                const json = await res.json();
+                const items = json.features.filter(f => f.geometry && f.geometry.rings).map(f => ({
+                    code: f.attributes.CODENUM,
+                    name: (f.attributes.NEIGHBORHO || '').trim(),
+                    rings: f.geometry.rings
+                }));
+                let done = 0, next = 0;
+                async function worker() {
+                    while (next < items.length) {
+                        const n = items[next++];
+                        const body = new URLSearchParams({
+                            geometry: JSON.stringify({ rings: n.rings, spatialReference: { wkid: 4326 } }),
+                            geometryType: 'esriGeometryPolygon',
+                            inSR: '4326',
+                            spatialRel: 'esriSpatialRelIntersects',
+                            where: 'IncidentDateTime >= CURRENT_TIMESTAMP - 365',
+                            outStatistics: JSON.stringify([{ statisticType: 'count', onStatisticField: 'OBJECTID', outStatisticFieldName: 'n' }]),
+                            groupByFieldsForStatistics: 'nibrsCode',
+                            f: 'json'
+                        });
+                        n.violent = 0; n.property = 0; n.total = 0;
+                        try {
+                            const r = await (await fetch(JSO_URL, { method: 'POST', body })).json();
+                            (r.features || []).forEach(f => {
+                                const { nibrsCode: code, n: count } = f.attributes;
+                                n.total += count;
+                                if (VIOLENT.includes(code)) n.violent += count;
+                                else if (isProperty(code)) n.property += count;
+                            });
+                        } catch (e) { n.failed = true; }
+                        done++;
+                        setCrimeStatus(`מחשב פשיעה לפי שכונה... ${done}/${items.length}`);
+                    }
+                }
+                await Promise.all(Array.from({ length: 6 }, worker));
+                const data = { fetchedAt: Date.now(), items };
+                if (!items.some(n => n.failed)) save(CRIME_STORE, data);
+                return data;
+            }
+
+            function rankNeighborhoods(data) {
+                // שכונה בלי אף דיווח היא בדרך כלל מחוץ לתחום של JSO (למשל הביצ'ים) - "אין נתונים" ולא "בטוח"
+                const scored = data.items.filter(n => n.total > 0);
+                scored.forEach(n => {
+                    const lat = n.rings[0].reduce((s, p) => s + p[1], 0) / n.rings[0].length;
+                    n.km2 = Math.max(areaKm2(n.rings, lat), 0.05);
+                    n.score = (n.violent * 2 + n.property) / n.km2;
+                });
+                scored.sort((a, b) => a.score - b.score);
+                scored.forEach((n, k) => { n.rank = k + 1; n.pct = scored.length > 1 ? k / (scored.length - 1) : 0; });
+                data.ranked = scored.length;
+            }
+
+            // 0 = ירוק חזק, 1 = אדום חזק
+            function crimeColor(pct) {
+                const stops = [[26, 150, 65], [166, 217, 106], [255, 255, 191], [253, 174, 97], [215, 25, 28]];
+                const x = pct * (stops.length - 1), i = Math.min(Math.floor(x), stops.length - 2), t = x - i;
+                const c = stops[i].map((v, k) => Math.round(v + (stops[i + 1][k] - v) * t));
+                return `rgb(${c[0]},${c[1]},${c[2]})`;
+            }
+
+            function crimeTip(n) {
+                if (n.total === 0) return `<div class="crime-tip"><b>${esc(n.name)}</b><br>אין נתוני JSO (מחוץ לתחום)</div>`;
+                return `<div class="crime-tip"><b>${esc(n.name)}</b><br>
+                    דירוג בטיחות: ${neighborhoods.ranked - n.rank + 1} מתוך ${neighborhoods.ranked}<br>
+                    אלימות: ${n.violent.toLocaleString('en-US')} · רכוש: ${n.property.toLocaleString('en-US')}<br>
+                    <small>דיווחים ב-12 החודשים האחרונים</small></div>`;
+            }
+
+            function drawCrimeLayer() {
+                if (!map || !neighborhoods) return;
+                if (crimeLayer) crimeLayer.remove();
+                crimeLayer = L.layerGroup();
+                neighborhoods.items.forEach(n => {
+                    L.polygon(toLatLngs(n.rings), { pane: 'crime', weight: 1, color: '#ffffff', fillColor: n.total > 0 ? crimeColor(n.pct) : '#888888' })
+                        .bindTooltip(() => crimeTip(n), { sticky: true, direction: 'top' })
+                        .addTo(crimeLayer);
+                });
+                applyCrimeStyle();
+                if (crimePrefs.on) crimeLayer.addTo(map);
+            }
+
+            function applyCrimeStyle() {
+                if (!crimeLayer) return;
+                // הסמן הוא "שקיפות": 0 = צבע מלא, 90 = כמעט שקוף
+                const fill = Math.max(0.05, (100 - crimePrefs.opacity) / 100 * 0.85);
+                crimeLayer.eachLayer(p => p.setStyle({ fillOpacity: fill, opacity: Math.min(0.6, fill) }));
+            }
+
+            function setCrimeStatus(text) { $('crimeStatus').textContent = text; }
+
+            async function initCrime() {
+                $('crimeToggle').checked = crimePrefs.on;
+                $('crimeOpacity').value = crimePrefs.opacity;
+                if (!map) return;
+                map.createPane('crime').style.zIndex = 350; // מתחת לנקודות של התיקים
+                try {
+                    neighborhoods = await loadNeighborhoods();
+                    rankNeighborhoods(neighborhoods);
+                    setCrimeStatus('');
+                    drawCrimeLayer();
+                } catch (e) {
+                    setCrimeStatus('לא ניתן לטעון נתוני פשיעה');
+                }
+            }
+
+            $('crimeToggle').addEventListener('change', (e) => {
+                crimePrefs.on = e.target.checked;
+                save(CRIME_PREFS, crimePrefs);
+                if (!crimeLayer) return;
+                if (crimePrefs.on) crimeLayer.addTo(map); else crimeLayer.remove();
+            });
+            $('crimeOpacity').addEventListener('input', (e) => {
+                crimePrefs.opacity = Number(e.target.value);
+                save(CRIME_PREFS, crimePrefs);
+                applyCrimeStyle();
+            });
+
             // ---------- סינון וטבלה ----------
             function setStatus(text, isErr) {
                 $('fcStatus').textContent = text;
@@ -3097,7 +3321,7 @@
                 const rows = data.rows.map((r, i) => ({ r, i })).filter(x => !hidden.has(x.r.status));
                 if (!rows.length) { el.innerHTML = '<div class="comp-note">אין תיקים בסטטוסים שנבחרו</div>'; return; }
                 el.innerHTML = `<table><thead><tr>
-                        <th>תאריך מכירה</th><th>כתובת</th><th>סטטוס</th><th>מחיר מכירה</th><th>פסק דין</th><th>שומה</th><th>מקס' תובע</th>
+                        <th>מכירה</th><th>כתובת</th><th>סטטוס</th><th>מחיר מכירה</th><th>פסק דין</th><th>שומה</th><th>מקס' תובע</th>
                     </tr></thead><tbody>${rows.map(({ r, i }) => {
                         const info = statusInfo(r.status);
                         const noGeo = r.address && r.geo === null;
@@ -3224,6 +3448,7 @@
             renderAll();
             if (data && data.rows.some(r => r.address && r.geo === undefined)) geocodeAll();
             else fitToMarkers();
+            initCrime();
         })();
     </script>
     <script>
@@ -3298,7 +3523,7 @@
     <script>
         // עדכון עצמי: בכל פתיחה/חזרה לדף בודקים מול האתר אם יצאה גרסה חדשה, ואם כן טוענים מחדש פעם אחת.
         (function selfUpdate() {
-            const BUILD_ID = '2026-10-26-d';
+            const BUILD_ID = '2026-10-26-e';
             async function check() {
                 try {
                     const res = await fetch(location.pathname + '?_=' + Date.now(), { cache: 'no-store' });
