@@ -2,691 +2,803 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>GREMSON - מחשבון עסקה</title>
     <style>
-        body {
-            font-family: 'Inter', Arial, sans-serif; /* Using Inter font as per instructions */
-            margin: 20px;
-            text-align: right; /* Align text to the right for RTL */
-            background-color: #f4f7f6; /* Light background for better aesthetics */
-            color: #191970; /* Dark blue for all text */
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            min-height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background-attachment: fixed;
+            color: #fff;
         }
-        .header-container {
+
+        .shell {
             display: flex;
-            justify-content: center; /* Center the header content */
-            align-items: center; /* Vertically align items */
-            margin-bottom: 5px; /* Reduced margin to bring clocks closer */
-            padding-bottom: 10px;
-            border-bottom: 2px solid #3498db; /* Blue underline */
+            gap: 16px;
+            padding: 16px;
+            align-items: flex-start;
         }
-        .header-title-logo {
-            display: flex;
-            align-items: center;
-            flex-grow: 1; /* Allow title and logo to take available space */
-            justify-content: center; /* Center the title */
-        }
-        h1 {
-            color: #191970; /* Dark blue for heading */
-            text-align: center;
-            margin: 0; /* Remove default margin */
-            flex-grow: 1; /* Allow heading to take available space */
-        }
-        .logo {
-            display: none; /* Hide the logo as requested */
-        }
-        .clocks-row-container { /* New container for clocks to be on one line */
-            display: flex;
-            justify-content: center; /* Center the clocks */
-            width: 100%; /* Take full width below the header */
-            margin-bottom: 20px; /* Space below clocks */
-            padding-right: 0; /* No padding needed for centering */
-            box-sizing: border-box; /* Include padding in width */
-            gap: 20px; /* Space between clocks (approx 10 spaces) */
-        }
-        .online-clock {
-            color: #191970; /* Dark blue for clock */
-            font-size: 0.9em; /* Smaller font size */
-            font-weight: normal; /* Not bold */
-            white-space: nowrap; /* Prevent wrapping */
-            display: flex; /* Use flex to align label and time */
-            flex-direction: row; /* Keep label and time on one line */
-            align-items: baseline; /* Align text baselines */
-        }
-        .clock-label {
-            direction: rtl; /* Ensure label is RTL */
-            text-align: right; /* Align label text to the right */
-            flex-shrink: 0; /* Prevent label from shrinking */
-            margin-left: 5px; /* Space after the label (e.g., "שעון ישראל:") */
-        }
-        .clock-time {
-            direction: ltr; /* Ensure time is LTR */
-            text-align: left; /* Align time text to the left */
-            flex-grow: 1; /* Allow time to take remaining space */
-            margin-left: 5px; /* Single space after colon */
-        }
-        .subheading-box { /* Style for the subheading box */
-            background-color: #ecf0f1; /* Light grey background for the box */
-            border: 1px solid #bdc3c7; /* Grey border */
-            padding: 10px 15px;
-            border-radius: 8px; /* Rounded corners */
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #191970; /* Dark blue for subheading box text */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Subtle shadow */
-            /* Changed from inline-block and float to block for proper stacking */
-            display: block;
-            width: fit-content; /* Shrink to fit content */
-            margin-right: auto; /* Push to right for RTL */
-            margin-left: 0; /* No left margin */
-            margin-top: 20px;
-            margin-bottom: 15px;
-            clear: both; /* Clear floats above it */
-        }
-        .subheading-box h2 { /* Style for the h2 inside the box */
-            color: #191970; /* Dark blue for subheading */
-            margin: 0; /* Remove default margin from h2 inside the box */
-            text-align: right; /* Align text to the right within the box */
-            font-size: 1.1em; /* Ensure consistent font size */
-            font-weight: bold; /* Ensure consistent font weight */
-        }
-        /* New styles for table containers */
-        .table-wrapper {
-            background-color: #ffffff; /* Default white background for wrappers */
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .table-wrapper.main-table {
-            background-color: #e6f7ff; /* Light blue */
-        }
-        .table-wrapper.investment-table-wrapper {
-            background-color: #e0f2f7; /* Light cyan/blue */
-            flex: 1; /* Allow to grow in flex container */
-        }
-        .table-wrapper.loan-table-wrapper {
-            background-color: #e6f0ff; /* Light lavender blue */
-            flex: 1; /* Allow to grow in flex container */
-        }
-        /* Style for the new Comps content box */
-        .comps-content-box {
-            background-color: #dbeaf5; /* A slightly different shade of light blue for comps */
-            border: 1px solid #bdc3c7;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+        /* ---- תפריט צד (במובייל: רק כותרת ושעונים) ---- */
+        .side-nav {
+            flex: 0 0 250px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
+            padding: 16px 10px;
         }
-        .comps-input-container, .comps-results-container {
+
+        .brand {
+            text-align: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: 1.5px;
+        }
+
+        .brand-sub {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #cfe0ff;
+            margin-top: 2px;
+        }
+
+        .clocks {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            margin: 10px 0 8px;
+            padding: 8px 10px;
+            font-size: 0.78rem;
+            color: #ffd166;
+            background: rgba(255, 209, 102, 0.1);
+            border: 1px solid rgba(255, 209, 102, 0.3);
+            border-radius: 12px;
+        }
+
+        .online-clock {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .clock-time {
+            direction: ltr;
+            font-weight: 700;
+        }
+
+        .nav-group {
+            margin: 14px 6px 4px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #ffd166;
+        }
+
+        .side-nav .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            width: 100%;
+            padding: 10px 12px;
+            border: none;
+            border-right: 4px solid transparent;
+            background: transparent;
+            color: #dfe9ff;
+            font-size: 0.95rem;
+            font-family: inherit;
+            text-align: right;
+            text-decoration: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .side-nav .nav-item:hover { background: rgba(255, 255, 255, 0.1); }
+
+        .side-nav .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-right-color: #ffd166;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .nav-ico {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.12);
+            font-size: 1rem;
+        }
+
+        .nav-label { flex: 1 1 auto; }
+
+        /* ---- אזור התוכן ---- */
+        .main {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
+            padding: 16px 18px;
+            margin-bottom: 14px;
+        }
+
+        .sec-title {
+            margin: 0 0 12px 0;
+            font-size: 1.15rem;
+            color: #fff;
+        }
+
+        .sec-sub {
+            margin: 18px 0 10px 0;
+            font-size: 1rem;
+            color: #ffd166;
+        }
+
+        /* ---- טבלאות העסקה ---- */
+        .table-wrapper {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 14px;
+            overflow-x: auto;
+        }
+
+        .table-wrapper.investment-table-wrapper,
+        .table-wrapper.loan-table-wrapper { margin-bottom: 0; }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+        }
+
+        th, td {
+            padding: 11px 13px;
+            text-align: right;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+            color: #fff;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: 700;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background-color: rgba(255, 255, 255, 0.05); }
+
+        .investment-table td, .loan-details-table td { white-space: nowrap; }
+
+        .equity-cell, .profit-in-dollars-cell {
+            background-color: rgba(255, 107, 107, 0.17);
+        }
+
+        tbody tr:hover td.equity-cell,
+        tbody tr:hover td.profit-in-dollars-cell { background-color: rgba(255, 107, 107, 0.24); }
+
+        tr.profit-in-dollars-cell td { background-color: rgba(255, 107, 107, 0.17); }
+
+        .input-with-symbol-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .investment-table td[data-label="סה&quot;כ $"] .input-with-symbol-container,
+        .loan-details-table td[data-label="סכום ההלוואה בפועל"] .input-with-symbol-container,
+        .loan-details-table td[data-label="אחוז ריבית"] .input-with-symbol-container {
+            width: auto;
+            display: inline-flex;
+        }
+
+        .editable-price-input, .editable-percentage-input, .investment-amount-input,
+        .loan-amount-input, .loan-interest-input,
+        .dollar-rate-box input[type="number"], .comps-input-container input[type="text"] {
+            padding: 9px 11px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 9px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: rgba(255, 255, 255, 0.95);
+            color: #1e3c72;
+            min-width: 0;
+        }
+
+        .editable-price-input, .investment-amount-input, .loan-amount-input, .loan-interest-input {
+            flex: 1 1 auto;
+            text-align: right;
+        }
+
+        .editable-percentage-input { width: 100%; text-align: right; }
+
+        .symbol-left { color: #cfe0ff; flex-shrink: 0; }
+
+        .display-currency-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .ils-container {
+            display: flex;
+            align-items: baseline;
+            margin-top: 2px;
+            font-size: 0.8em;
+            color: #cfe0ff;
+        }
+
+        .ils-symbol { margin-left: 2px; }
+
+        .dollar-rate-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin: 4px 0 6px;
+        }
+
+        .dollar-rate-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 12px;
+        }
+
+        .dollar-rate-box input[type="number"] { width: 100px; text-align: left; }
+
+        .reset-button, .comps-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            color: #fff;
+            transition: background-color 0.2s;
+        }
+
+        .reset-button { background: #e53935; }
+        .reset-button:hover { background: #c62828; }
+        .comps-button { background: #4f8cff; }
+        .comps-button:hover { background: #3a74e0; }
+
+        .tables-row-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(470px, 1fr));
+            gap: 14px;
+        }
+
+        /* ---- Comps ---- */
+        .comps-content-box {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 14px;
+            padding: 14px;
+        }
+
+        .comps-input-container {
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        .comps-input-container label, .comps-results-container span {
-            font-weight: bold;
-            color: #191970;
+
+        .comps-input-container label, .comps-question-container label {
+            font-weight: 700;
             white-space: nowrap;
         }
-        .comps-input-container input[type="text"] {
-            padding: 8px 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1em;
-            flex-grow: 1;
-            box-sizing: border-box;
-            background-color: #e0ffe0; /* Light green background */
-            text-align: right; /* Align input text to right for RTL */
-            color: #191970;
+
+        .comps-input-container input[type="text"] { flex: 1 1 auto; text-align: right; }
+
+        #generatedPromptTextarea {
+            width: 100%;
+            min-height: 90px;
+            margin-top: 6px;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 0.9rem !important;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.22) !important;
+            border: 1px solid rgba(255, 255, 255, 0.22) !important;
+            border-radius: 10px !important;
+            resize: vertical;
         }
-        .comp-result-item {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end; /* Align results to the right */
-            flex-grow: 1;
-            gap: 5px;
+
+        .comps-button-container { display: flex; justify-content: center; }
+
+        .footer-links {
+            display: none;
         }
-        .comp-result-item span:last-child { /* The actual value */
-            font-weight: normal;
-            color: #00008B; /* Darker blue for values */
-            white-space: nowrap;
+
+        .footer-links a {
+            display: block;
+            text-align: center;
+            padding: 11px;
+            margin-top: 10px;
+            color: #cfe0ff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
         }
-        .comps-button-container {
-            display: flex;
-            justify-content: center;
+        /* ---- מחשבון תשואה ---- */
+        .yield-calc {
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
+            padding: 10px 14px;
             margin-top: 10px;
         }
-        .comps-button {
-            padding: 10px 20px;
-            background-color: #3498db; /* Blue button */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s ease;
-        }
-        .comps-button:hover {
-            background-color: #2980b9; /* Darker blue on hover */
-        }
-        /* Style for the generated prompt textarea */
-        #generatedPromptTextarea {
-            padding: 8px 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1em;
-            width: 100%;
-            box-sizing: border-box;
-            background-color: #e0ffe0; /* Light green background */
-            text-align: right; /* Align text to right for RTL */
-            color: #191970;
-            resize: vertical; /* Allow vertical resizing */
-            min-height: 80px; /* Minimum height */
-        }
 
-
-        table {
-            width: 100%;
-            border-collapse: collapse; /* Ensures borders are collapsed for a clean grid */
-            /* Removed direct box-shadow and border-radius from table, moved to wrapper */
-            margin-top: 0; /* Remove top margin as wrapper handles spacing */
-        }
-        th, td {
-            border: 1px solid #cccccc; /* Changed to a slightly darker border for clearer grid lines */
-            padding: 12px 15px;
-            text-align: right; /* Align text to the right for RTL */
-        }
-        th {
-            background-color: #3498db;
-            color: white;
-            font-weight: bold;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        tr:hover {
-            background-color: #eaf2f8;
-        }
-        .dollar-rate-container {
-            display: flex; /* Use flexbox for horizontal layout */
-            justify-content: flex-end; /* Align items to the right for RTL */
-            margin-top: 30px;
-            margin-bottom: 15px; /* Add some margin below for the new box */
-            clear: both; /* Ensure it clears previous floats */
-            align-items: center; /* Vertically align-items */
-            gap: 10px; /* Space between label and input */
-        }
-        .dollar-rate-box {
-            background-color: #ecf0f1; /* Light grey background for boxes */
-            border: 1px solid #bdc3c7; /* Grey border */
-            padding: 10px 15px;
-            border-radius: 8px; /* Rounded corners */
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #191970; /* Dark blue for dollar rate box text */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Subtle shadow */
-            display: flex; /* Use flexbox for content inside the box */
-            align-items: center; /* Vertically align-items */
-            gap: 10px; /* Space between label and input */
-        }
-        .dollar-rate-box input[type="number"] {
-            padding: 8px 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1em;
-            width: 100px; /* Adjust width as needed */
-            text-align: left; /* Align input text to left */
-            color: #191970; /* Dark blue for input text */
-        }
-        /* Style for the container holding the input and currency/percentage symbol */
-        .input-with-symbol-container {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end; /* Align to the right for RTL */
-            width: 100%; /* Ensure the container fills the cell by default */
-        }
-        /* Style for editable price input fields */
-        .editable-price-input {
-            padding: 8px 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1em;
-            flex-grow: 1;
-            box-sizing: border-box;
-            background-color: #e0ffe0; /* Light green background */
-            text-align: right; /* Align input text to right for RTL */
-            color: #191970; /* Dark blue for input text */
-        }
-        /* Style for the currency/percentage symbol span */
-        .symbol-left { /* Position symbol to the left of the input (for RTL) */
-            margin-right: 5px;
-            color: #00008B; /* Slightly lighter dark blue for symbols */
-            flex-shrink: 0;
-        }
-        /* Style for the light red background on profit cells */
-        .profit-in-dollars-cell {
-            background-color: #ffe0e0; /* Light red background */
-        }
-        /* Style for light red background on equity cells */
-        .equity-cell {
-            background-color: #ffe0e0; /* Light red background */
-        }
-        /* Style for editable percentage input fields */
-        .editable-percentage-input {
-            padding: 8px 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1em;
-            width: 100%;
-            box-sizing: border-box;
-            background-color: #e0ffe0; /* Light green background directly on the input */
-            text-align: right; /* Align input text to right for RTL */
-            color: #191970; /* Dark blue for input text */
-        }
-        /* Style for display-only currency cells */
-        .display-currency-cell {
-            display: flex;
-            flex-direction: column; /* Stack dollar and ILS vertically */
-            align-items: flex-end; /* Align items to the right within the column */
-            width: 100%;
-            height: 100%;
-            color: #191970; /* Dark blue for display currency cells */
-        }
-        /* Style for ILS values */
-        .ils-container { /* New container for ILS value and symbol */
-            display: flex;
-            align-items: baseline; /* Align symbol and number */
-            margin-top: 2px; /* Small space below dollar value */
-            color: #191970; /* Dark blue as requested */
-            font-size: 0.8em; /* Smaller font size */
-        }
-        .ils-value {
-            /* Inherits color and font-size from .ils-container */
-        }
-        .ils-symbol {
-            margin-left: 2px; /* Space after the number */
-            margin-right: 0; /* Override previous margin-right */
-        }
-
-        .additional-right-box { /* Style for the new box */
-            background-color: #ecf0f1; /* Light grey background for the box */
-            border: 1px solid #bdc3c7; /* Grey border */
-            padding: 10px 15px;
-            border-radius: 8px; /* Rounded corners */
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #191970; /* Dark blue for additional box text */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Subtle shadow */
-            display: block; /* Changed to block */
-            width: fit-content; /* Shrink to fit content */
-            margin-right: auto; /* Push to right for RTL */
-            margin-left: 0; /* No left margin */
-            margin-top: 15px; /* Space from the dollar rate box */
-            margin-bottom: 15px; /* Space below for the next box */
-            clear: both; /* Clear floats above it */
-        }
-        .additional-right-box h3 { /* Style for content inside the new box */
-            color: #191970; /* Dark blue for h3 inside box */
+        .yield-header {
             margin: 0;
-            text-align: right;
-            font-size: 1.1em; /* Ensure consistent font size */
-            font-weight: bold; /* Ensure consistent font weight */
-        }
-        /* Container for the two side-by-side tables */
-        .tables-row-container {
-            display: flex;
-            flex-wrap: wrap; /* Allow tables to wrap on smaller screens */
-            justify-content: flex-end; /* Align to the right for RTL */
-            gap: 20px; /* Space between tables */
-            margin-top: 20px;
-            clear: both; /* Clear any preceding floats */
-        }
-        /* Investment table styling */
-        .investment-table {
-            width: 100%; /* Ensure table fills its wrapper */
-            border-collapse: collapse;
-            /* Removed box-shadow, border-radius, overflow from here as it's on the wrapper */
-        }
-        .investment-table th, .investment-table td {
-            white-space: nowrap; /* Prevent text wrapping in cells */
-            border: 1px solid #cccccc;
-            padding: 12px 15px;
-            text-align: right;
-            color: #191970; /* Dark blue for table cell text */
-        }
-        .investment-table th {
-            background-color: #3498db;
-            color: white;
-            font-weight: bold;
-        }
-        .investment-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        tr:hover {
-            background-color: #eaf2f8;
-        }
-        /* Style for the investment amount input fields (similar to editable-price-input) */
-        .investment-amount-input {
-            padding: 8px 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1em;
-            flex-grow: 1;
-            box-sizing: border-box;
-            background-color: #e0ffe0; /* Light green background */
-            text-align: right;
-            color: #191970; /* Dark blue for input text */
-        }
-        /* Specific styling for the input-with-symbol-container within the "סה&quot;כ $" column of investment table */
-        .investment-table td[data-label="סה&quot;כ $"] .input-with-symbol-container {
-            width: auto; /* Allow container to shrink to content */
-            display: inline-flex; /* Make it inline-flex to shrink-wrap its content */
-            /* The parent td's text-align: right will align this inline-flex container to the right */
-        }
-        /* Loan details table styling */
-        .loan-details-table {
-            width: 100%; /* Ensure table fills its wrapper */
-            border-collapse: collapse;
-            /* Removed box-shadow, border-radius, overflow from here as it's on the wrapper */
-        }
-        .loan-details-table th, .loan-details-table td {
-            border: 1px solid #cccccc;
-            padding: 12px 15px;
-            text-align: right;
-            white-space: nowrap;
-            color: #191970; /* Dark blue for table cell text */
-        }
-        .loan-details-table th {
-            background-color: #3498db;
-            color: white;
-            font-weight: bold;
-        }
-        .loan-details-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        tr:hover {
-            background-color: #eaf2f8;
-        }
-        /* Specific styling for the loan amount input */
-        .loan-amount-input {
-            padding: 8px 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1em;
-            flex-grow: 1;
-            box-sizing: border-box;
-            background-color: #e0ffe0; /* Light green background */
-            text-align: right;
-            color: #191970; /* Dark blue for input text */
-        }
-        /* Specific styling for the interest rate input */
-        .loan-interest-input {
-            padding: 8px 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1em;
-            flex-grow: 1;
-            box-sizing: border-box;
-            background-color: #e0ffe0; /* Light green background */
-            text-align: right;
-            color: #191970; /* Dark blue for input text */
-        }
-        /* Specific styling for the input-with-symbol-container within the "סכום ההלוואה בפועל" column of loan table */
-        .loan-details-table td[data-label="סכום ההלוואה בפועל"] .input-with-symbol-container {
-            width: auto; /* Allow container to shrink to content */
-            display: inline-flex; /* Make it inline-flex to shrink-wrap its content */
-            /* The parent td's text-align: right will align this inline-flex container to the right */
-        }
-        /* Specific styling for the input-with-symbol-container within the "אחוז ריבית" column of loan table */
-        .loan-details-table td[data-label="אחוז ריבית"] .input-with-symbol-container {
-            width: auto; /* Allow container to shrink to content */
-            display: inline-flex; /* Make it inline-flex to shrink-wrap its content */
-            /* The parent td's text-align: right will align this inline-flex container to the right */
-        }
-        /* Hide spin buttons for number inputs */
-        /* Removed .no-spinners class from here to re-enable spinners */
-        /* New summary boxes styling */
-        .summary-info-row {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: flex-start; /* Align to the left for RTL */
-            gap: 20px;
-            margin-top: 20px;
-            clear: both;
-        }
-        .summary-value-box {
-            background-color: #ecf0f1; /* Default light grey */
-            border: 1px solid #bdc3c7;
-            padding: 15px 20px;
-            border-radius: 8px;
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #191970; /* Dark blue for summary box text */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-            display: flex;
-            align-items: center;
-            justify-content: flex-end; /* Align content to the right within the box */
-            flex: 1; /* Allow boxes to grow and shrink */
-            min-width: 120px; /* Minimum width for each box */
-        }
-        .summary-value-box span {
-            white-space: nowrap; /* Prevent text/number wrapping */
-        }
-        .reset-button {
-            padding: 10px 20px;
-            background-color: #f44336; /* Red color for reset button */
-            color: white; /* Keep white for button text */
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s ease;
-        }
-        .reset-button:hover {
-            background-color: #d32f2f; /* Darker red on hover */
-        }
-        /* Footer links styling */
-        .footer-links-container {
-            display: flex;
-            justify-content: center; /* Center the links */
-            flex-wrap: wrap; /* Allow wrapping on small screens */
-            gap: 30px; /* Space between links */
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #ccc;
-        }
-        .footer-link-box {
-            background-color: #ecf0f1;
-            border: 1px solid #bdc3c7;
-            padding: 10px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            font-size: 0.85rem;
+            color: #cfe0ff;
             text-align: center;
-            font-size: 0.9em; /* Smaller font size for footer links */
-            font-weight: bold;
-            color: #191970;
-            text-decoration: none; /* Remove underline from links */
-            transition: background-color 0.3s ease;
-        }
-        .footer-link-box:hover {
-            background-color: #dbe4e6;
-        }
-        .footer-link-box a {
-            color: #191970; /* Ensure link text is dark blue */
-            text-decoration: none; /* Remove underline */
+            cursor: pointer;
+            user-select: none;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .header-container {
-                flex-direction: column; /* Stack header items on small screens */
-                align-items: center; /* Center items when stacked */
-            }
-            .header-title-logo {
-                flex-direction: column;
-                justify-content: center;
-            }
-            .logo {
-                margin-left: 0;
-                margin-bottom: 10px; /* Space between logo and title */
-            }
-            .clocks-row-container {
-                flex-direction: column; /* Stack clocks vertically on small screens */
-                align-items: center; /* Center clocks when stacked */
-                margin-left: 0;
-                padding-right: 0;
-                gap: 10px;
-            }
-            .online-clock {
-                width: 100%; /* Take full width */
-                justify-content: center; /* Center content within clock */
-            }
-            .dollar-rate-container {
-                flex-direction: column; /* Stack columns on small screens */
-                align-items: center; /* Center items when stacked */
-                gap: 10px;
-            }
-            .dollar-rate-box {
-                width: 90%; /* Make boxes wider on small screens */
-                text-align: center;
-                flex-direction: column; /* Stack label and input vertically on small screens */
-            }
-            .dollar-rate-box input[type="number"] {
-                width: 80%; /* Adjust input width for small screens */
-            }
-            .table-wrapper {
-                padding: 10px; /* Adjust padding for small screens */
-            }
-            table {
-                display: block; /* Ensure table maintains block display */
-            }
-            thead {
-                display: none; /* Hide table header on small screens */
-            }
-            tr {
-                margin-bottom: 15px;
+        .yield-header .col-arrow {
+            display: inline-block;
+            font-size: 0.7rem;
+            margin-left: 2px;
+        }
+
+        .yield-header:focus-visible {
+            outline: 2px solid rgba(255, 255, 255, 0.5);
+            outline-offset: 4px;
+            border-radius: 8px;
+        }
+
+        .yield-body {
+            margin-top: 12px;
+        }
+
+        .yield-calc.collapsed .yield-body {
+            display: none;
+        }
+
+        .yield-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .yield-field label {
+            flex: 0 0 84px;
+            font-size: 0.7rem;
+            color: #cfe0ff;
+            line-height: 1.2;
+        }
+
+        .yield-input-wrap {
+            position: relative;
+            flex: 0 0 50%;
+            min-width: 0;
+        }
+
+        .yield-input-wrap .currency {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            color: #888;
+            font-size: 0.85rem;
+            pointer-events: none;
+        }
+
+        .yield-field input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 9px 26px 9px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            font-size: 0.9rem;
+            text-align: left;
+            direction: ltr;
+            appearance: textfield;
+            -moz-appearance: textfield;
+        }
+
+        /* מסתיר את חצי ההגדלה/הקטנה הטבעיים של input[type=number] - הם היו מתנגשים עם סימן ה-₪ */
+        .yield-field input::-webkit-outer-spin-button,
+        .yield-field input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .yield-result {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            text-align: center;
+        }
+
+        .yield-result .yield-label {
+            display: block;
+            font-size: 0.7rem;
+            color: #cfe0ff;
+            margin-bottom: 2px;
+        }
+
+        .yield-result .yield-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #8bc34a;
+        }
+
+        .yield-formula {
+            margin-top: 4px;
+            font-size: 0.68rem;
+            color: #9fb4dd;
+            direction: ltr;
+        }
+
+        /* ---- מחשבון השקעה (שותפות) ---- */
+        .invest-group-title {
+            margin: 12px 0 8px 0;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #ffd166;
+        }
+
+        .invest-toggle {
+            cursor: pointer;
+            user-select: none;
+            text-align: center;
+        }
+
+        .invest-toggle .col-arrow {
+            display: inline-block;
+            font-size: 0.7rem;
+        }
+
+        .invest-costs-total {
+            color: #8bc34a;
+            direction: ltr;
+            unicode-bidi: isolate;
+        }
+
+        .yield-field input[readonly] {
+            background: rgba(255, 255, 255, 0.6);
+            color: #444;
+            cursor: default;
+        }
+
+        .invest-costs-body[hidden] {
+            display: none;
+        }
+
+        .invest-results {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .invest-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 6px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+        }
+
+        .invest-row:last-of-type {
+            border-bottom: none;
+        }
+
+        .invest-row .invest-label {
+            font-size: 0.7rem;
+            color: #cfe0ff;
+            line-height: 1.3;
+            flex: 1 1 auto;
+        }
+
+        .invest-row .invest-value {
+            direction: ltr;
+            text-align: left;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #8bc34a;
+            flex: 0 0 auto;
+            line-height: 1.3;
+        }
+
+        .invest-row .invest-value small {
+            display: block;
+            font-size: 0.65rem;
+            font-weight: 400;
+            color: #cfe0ff;
+        }
+
+        .invest-row .invest-value.negative {
+            color: #ff6b6b;
+        }
+
+        .invest-note {
+            margin-top: 8px;
+            font-size: 0.62rem;
+            color: #9fb4dd;
+            line-height: 1.4;
+        }
+
+
+        @media (min-width: 821px) {
+            .yield-calc.view-active .yield-body,
+            .yield-calc.collapsed.view-active .yield-body {
                 display: block;
-                border: 1px solid #cccccc;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            }
-            td {
-                border: 1px solid #cccccc;
-                padding: 10px 15px; /* פאדינג אחיד או מותאם אישית */
-                text-align: right; /* יישור לימין עבור RTL */
-                display: flex; /* הפוך את התא לקונטיינר גמיס (flex container) */
-                flex-direction: column; /* ערום את התוכן בעמודה */
-                align-items: flex-start; /* יישר את התוכן לשמאל בתוך התא */
-                position: relative; /* החזר position: relative; כדי למקם את ה-cell-label אם צריך */
-                overflow: hidden; /* למנוע גלישה של תוכן ארוך מחוץ לתא */
-            }
-            td::before {
-                content: attr(data-label);
-                font-weight: bold;
-                text-align: right;
-                color: #191970; /* Dark blue for labels on small screens */
-                margin-bottom: 5px; /* רווח קטן מתחת לתווית */
-                display: block; /* ודא שהתווית תופסת שורה משלה */
-                width: 100%; /* תן לה 100% רוחב כדי שלא תתנגש עם תוכן אחר */
-            }
-            .input-with-symbol-container, .display-currency-cell {
-                width: 100%; /* ודא שזה ממלא את הרוחב הזמין */
-                justify-content: flex-end; /* יישר את התוכן (מספר + סמל) לימין */
-            }
-            .editable-price-input, .editable-percentage-input,
-            .investment-amount-input, .loan-amount-input, .loan-interest-input {
-                width: 100%; /* ודא שהאינפוטים תופסים את כל הרוחב הזמין בתוך הקונטיינר שלהם */
-                box-sizing: border-box; /* חשוב כדי שהפאדינג לא יגרום לגלישה */
-                text-align: right; /* ודא שגם בתוך האינפוט הטקסט מיושר לימין */
-            }
-            /* Apply light red background to specific cells on small screens */
-            td[data-label="סכום הרווח"],
-            td[data-label="השקעה"],
-            tr:nth-child(2) td[data-label="מחיר מכירה"],
-            tr:nth-child(1) td[data-label="אחוז הרווח"] {
-                background-color: #ffe0e0;
-            }
-            /* Removed specific green background for td in responsive, as input handles it */
-            .subheading-box, .additional-right-box, .tables-row-container, .summary-info-row { /* Adjust boxes and table container for small screens */
-                width: 90%;
-                float: none; /* Remove float */
-                text-align: center;
-                margin-left: auto;
-                margin-right: auto;
-                flex-direction: column; /* Stack items vertically */
-                gap: 15px; /* Space between stacked items */
-            }
-            .subheading-box h2, .additional-right-box h3 {
-                text-align: center;
-            }
-            .investment-table, .loan-details-table, .summary-value-box { /* Ensure tables/boxes take full width when stacked */
                 width: 100%;
-                min-width: unset; /* Remove min-width for stacking */
+                max-width: 720px;
+                margin: 12px auto 0;
             }
-            .investment-table thead, .loan-details-table thead {
-                display: none; /* Hide table header on small screens */
+
+            .yield-calc.view-active .yield-header {
+                text-align: center;
             }
-            .investment-table tr, .loan-details-table tr {
-                margin-bottom: 15px;
-                display: block;
-                border: 1px solid #cccccc;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+            /* ---- מחשבון השקעה גדול וברור: קלט מימין, תוצאות ככרטיסים משמאל ---- */
+            #investCalc.view-active .yield-body {
+                max-width: 1280px;
             }
-            .investment-table td, .loan-details-table td {
-                border: 1px solid #cccccc;
-                padding: 10px 15px; /* פאדינג אחיד או מותאם אישית */
+
+            #investCalc.view-active .yield-header {
+                font-size: 1.8rem;
+                margin-bottom: 22px;
+            }
+
+            #investCalc.view-active .invest-layout {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+                gap: 48px;
+                align-items: start;
+            }
+
+            #investCalc.view-active .invest-group-title {
+                font-size: 1.15rem;
+                margin: 4px 0 16px 0;
                 text-align: right;
+            }
+
+            #investCalc.view-active .invest-group-title:not(:first-child) {
+                margin-top: 30px;
+            }
+
+            #investCalc.view-active .invest-toggle {
+                pointer-events: none;
+            }
+
+            #investCalc.view-active .invest-toggle .invest-costs-total {
+                float: left;
+                font-size: 1.25rem;
+                font-weight: 700;
+            }
+
+            #investCalc.view-active .invest-costs-body[hidden] {
+                display: block;
+            }
+
+            #investCalc.view-active .yield-field {
+                gap: 14px;
+                margin-bottom: 9px;
+            }
+
+            #investCalc.view-active .yield-field label {
+                flex: 0 0 170px;
+                font-size: 1.05rem;
+                color: #e3ebfb;
+            }
+
+            #investCalc.view-active .yield-input-wrap {
+                flex: 1 1 auto;
+            }
+
+            #investCalc.view-active .yield-field input {
+                font-size: 1.25rem;
+                padding: 9px 38px 9px 16px;
+                border-radius: 12px;
+            }
+
+            #investCalc.view-active .yield-input-wrap .currency {
+                font-size: 1.1rem;
+                right: 14px;
+            }
+
+            #investCalc.view-active .invest-results {
+                margin-top: 0;
+                padding-top: 0;
+                border-top: none;
                 display: flex;
                 flex-direction: column;
-                align-items: flex-start;
-                position: relative;
+                gap: 16px;
+            }
+
+            #investCalc.view-active .invest-row {
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 16px;
+                padding: 20px 26px;
+                align-items: center;
+                gap: 18px;
+            }
+
+            #investCalc.view-active .invest-row:first-child {
+                background: rgba(255, 255, 255, 0.16);
+            }
+
+            #investCalc.view-active .invest-row .invest-label {
+                font-size: 1.15rem;
+                line-height: 1.4;
+                color: #e3ebfb;
+            }
+
+            #investCalc.view-active .invest-row .invest-value {
+                font-size: 2.2rem;
+                line-height: 1.15;
+            }
+
+            #investCalc.view-active .invest-row .invest-value small {
+                font-size: 1.05rem;
+                margin-top: 4px;
+                color: #cfe0ff;
+            }
+
+            #investCalc.view-active .invest-note {
+                font-size: 0.9rem;
+                margin-top: 16px;
+                text-align: center;
+            }
+
+        }
+
+
+        /* ---- תצוגת מחשב: חלון אחד בכל פעם על כל המסך ---- */
+        @media (min-width: 821px) {
+            html, body { height: 100%; overflow: hidden; }
+
+            .shell { height: 100vh; }
+
+            .side-nav { align-self: stretch; overflow-y: auto; }
+
+            .main { height: calc(100vh - 32px); overflow-y: auto; }
+
+            .view-panel:not(.view-active) { display: none; }
+
+            .view-panel.view-active {
+                margin: 0;
+                min-height: 100%;
+                padding: 22px 28px;
+            }
+
+            .yield-calc.view-active .col-arrow { display: none; }
+
+            .yield-calc.view-active .yield-header { pointer-events: none; font-size: 1.35rem; margin-bottom: 14px; }
+
+            .yield-calc.view-active .invest-toggle { pointer-events: none; }
+
+            .yield-calc.view-active.collapsed .yield-body { display: block; }
+
+            .main .footer-links { display: none; }
+        }
+
+        /* ---- מובייל: הכל נערם אנכית, הכותרת והשעונים למעלה ---- */
+        @media (max-width: 820px) {
+            .shell { flex-direction: column; padding: 12px; gap: 12px; }
+
+            .side-nav { flex: 0 0 auto; width: 100%; padding: 12px; }
+
+            .side-nav .nav-item, .side-nav .nav-group { display: none; }
+
+            .clocks { flex-direction: row; justify-content: space-between; margin-bottom: 0; }
+
+            .footer-links { display: block; }
+
+            input, select, textarea { font-size: 16px !important; }
+        }
+
+        @media (max-width: 700px) {
+            table, thead, tbody, tr, td { display: block; }
+
+            thead { display: none; }
+
+            tr {
+                margin-bottom: 12px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 12px;
                 overflow: hidden;
             }
-            .investment-table td::before, .loan-details-table td::before {
+
+            td {
+                border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+                white-space: normal !important;
+            }
+
+            td::before {
                 content: attr(data-label);
-                font-weight: bold;
-                text-align: right;
-                color: #191970; /* Dark blue for labels on small screens */
-                margin-bottom: 5px;
                 display: block;
-                width: 100%;
+                font-weight: 700;
+                font-size: 0.8rem;
+                color: #cfe0ff;
+                margin-bottom: 4px;
             }
-            .footer-links-container {
-                flex-direction: column;
-                gap: 15px;
-            }
+
+            .investment-table td[data-label="סה&quot;כ $"] .input-with-symbol-container,
+            .loan-details-table td[data-label="סכום ההלוואה בפועל"] .input-with-symbol-container,
+            .loan-details-table td[data-label="אחוז ריבית"] .input-with-symbol-container { width: 100%; display: flex; }
+
+            .tables-row-container { grid-template-columns: minmax(0, 1fr); }
+
+            .comps-input-container { flex-direction: column; align-items: stretch; }
         }
     </style>
 </head>
 <body>
-    <div class="header-container">
-        <div class="header-title-logo">
-            <h1>GREMSON - מחשבון עסקה</h1>
-        </div>
-    </div>
-    <div class="clocks-row-container">
-        <div class="online-clock">
-            <span class="clock-label">שעון ישראל:</span>
-            <span id="israelTimeDisplay" class="clock-time"></span>
-        </div>
-        <div class="online-clock">
-            <span class="clock-label">שעון מזרח ארה"ב:</span>
-            <span id="easternTimeDisplay" class="clock-time"></span>
-        </div>
-    </div>
-    <div class="subheading-box">
-        <h2>חישוב כדאיות</h2>
-    </div>
-    <div class="table-wrapper main-table">
+    <script>/* גביש: כפתור קבוע בפינה השמאלית העליונה, מבודד מה-CSS של הדף */(function(){if(document.getElementById("gavish-hub"))return;var h=document.createElement("div");h.id="gavish-hub";h.style.cssText="position:fixed!important;top:10px!important;left:10px!important;width:36px!important;height:36px!important;z-index:2147483000!important;margin:0!important;padding:0!important;display:block!important;transform:none!important;";var r=h.attachShadow({mode:"open"});r.innerHTML='<style>a{display:flex;align-items:center;justify-content:center;width:36px;height:36px;box-sizing:border-box;font-size:19px;line-height:1;text-decoration:none;background:rgba(15,31,61,.84);border:1px solid rgba(255,255,255,.32);border-radius:11px;box-shadow:0 4px 14px rgba(0,0,0,.3);font-family:sans-serif}a:hover{background:rgba(40,70,130,.95)}</style><a href="https://gavishori.github.io/Timer/home/" title="גביש - כל הפרויקטים" aria-label="גביש - כל הפרויקטים">💎</a>';document.body.insertBefore(h,document.body.firstChild)})();</script>
+
+    <div class="shell">
+
+        <nav class="side-nav" id="sideNav" aria-label="תפריט ראשי">
+            <div class="brand">GREMSON 🤝</div>
+            <div class="brand-sub">מחשבון כדאיות עסקה</div>
+            <div class="clocks">
+                <div class="online-clock"><span class="clock-label">שעון ישראל</span><span id="israelTimeDisplay" class="clock-time"></span></div>
+                <div class="online-clock"><span class="clock-label">שעון מזרח ארה"ב</span><span id="easternTimeDisplay" class="clock-time"></span></div>
+            </div>
+
+            <div class="nav-group">חישובים</div>
+            <button type="button" class="nav-item" data-target="deal"><span class="nav-ico">🏢</span><span class="nav-label">כדאיות עסקה ומימון</span></button>
+            <button type="button" class="nav-item" data-target="comps"><span class="nav-ico">📍</span><span class="nav-label">Comps</span></button>
+            <button type="button" class="nav-item" data-target="yield"><span class="nav-ico">💰</span><span class="nav-label">מחשבון תשואה</span></button>
+            <button type="button" class="nav-item" data-target="invest"><span class="nav-ico">🏗️</span><span class="nav-label">מחשבון השקעה</span></button>
+
+            <div class="nav-group">קישורים</div>
+            <a class="nav-item" href="https://gengine.co/home" target="_blank" rel="noopener"><span class="nav-ico">🔗</span><span class="nav-label">גרמסונית</span></a>
+            <a class="nav-item" href="https://gremson.com/" target="_blank" rel="noopener"><span class="nav-ico">🪪</span><span class="nav-label">כרטיס ביקור GREMSON LLC</span></a>
+        </nav>
+
+        <main class="main">
+
+            <section class="panel view-panel" data-view="deal">
+                <h2 class="sec-title">חישוב כדאיות</h2>
+<div class="table-wrapper main-table">
         <table>
             <thead>
                 <tr>
@@ -792,10 +904,9 @@
         </div>
         <button id="resetButton" class="reset-button">איפוס</button>
     </div>
-    <div class="additional-right-box">
-        <h3>מימון</h3>
-    </div>
-    <div class="tables-row-container">
+    
+                <h3 class="sec-sub">מימון</h3>
+<div class="tables-row-container">
         <div class="table-wrapper investment-table-wrapper">
             <table class="investment-table">
                 <thead>
@@ -906,10 +1017,12 @@
             </table>
         </div>
     </div>
-    <div class="subheading-box"> <!-- Moved subheading box for Comps here -->
-        <h3>Comps</h3>
-    </div>
-    <div class="comps-content-box">
+    
+            </section>
+
+            <section class="panel view-panel" data-view="comps">
+                <h2 class="sec-title">Comps</h2>
+<div class="comps-content-box">
         <div class="comps-input-container">
             <label for="addressInput">כתובת:</label>
             <input type="text" id="addressInput" placeholder="הזן כתובת">
@@ -922,14 +1035,125 @@
             <button id="getCompsButton" class="comps-button">בצע</button>
         </div>
     </div>
-    <div class="footer-links-container">
-        <div class="footer-link-box">
-            <a href="https://gengine.co/home" target="_blank">גרמסונית</a>
-        </div>
-        <div class="footer-link-box">
-            <a href="https://gremson.com/" target="_blank">כרטיס ביקור GREMSON LLC</a>
-        </div>
+    
+            </section>
+            <div class="yield-calc collapsed view-panel" id="yieldCalc" data-view="yield">
+                <h3 class="yield-header" role="button" tabindex="0" aria-expanded="false">
+                    <span><span class="col-arrow">▸</span> 💰 מחשבון תשואה</span>
+                </h3>
+                <div class="yield-body">
+                <div class="yield-field">
+                    <label for="yieldPrice">מחיר קניית דירה</label>
+                    <div class="yield-input-wrap">
+                        <input type="number" id="yieldPrice" placeholder="1800000" min="0" step="1000">
+                        <span class="currency">₪</span>
+                    </div>
+                </div>
+                <div class="yield-field">
+                    <label for="yieldRent">שכ"ד חודשי</label>
+                    <div class="yield-input-wrap">
+                        <input type="number" id="yieldRent" placeholder="5500" min="0" step="50">
+                        <span class="currency">₪</span>
+                    </div>
+                </div>
+                <div class="yield-result">
+                    <span class="yield-label">תשואה שנתית</span>
+                    <span class="yield-value" id="yieldResult">—</span>
+                    <div class="yield-formula" id="yieldFormula"></div>
+                </div>
+                </div>
+            </div>
+
+            <div class="yield-calc collapsed view-panel" id="investCalc" data-view="invest">
+                <h3 class="yield-header" role="button" tabindex="0" aria-expanded="false">
+                    <span><span class="col-arrow">▸</span> 🏗️ מחשבון השקעה</span>
+                </h3>
+                <div class="yield-body">
+                <div class="invest-layout">
+                <div class="invest-inputs">
+                <div class="invest-group-title invest-toggle" id="investCostsToggle" role="button" tabindex="0" aria-expanded="false"><span class="col-arrow">▸</span> עלויות הפרויקט (בדולר) <span class="invest-costs-total" id="investCostsTotal"></span></div>
+                <div class="invest-costs-body" id="investCostsBody" hidden>
+                <div class="yield-field">
+                    <label for="investBuild">עלות הבנייה</label>
+                    <div class="yield-input-wrap">
+                        <input type="number" id="investBuild" readonly tabindex="-1" placeholder="250000" min="0" step="1000">
+                        <span class="currency">$</span>
+                    </div>
+                </div>
+                <div class="yield-field">
+                    <label for="investLand">קרקע</label>
+                    <div class="yield-input-wrap">
+                        <input type="number" id="investLand" readonly tabindex="-1" placeholder="30000" min="0" step="1000">
+                        <span class="currency">$</span>
+                    </div>
+                </div>
+                <div class="yield-field">
+                    <label for="investFreddy">פרדי</label>
+                    <div class="yield-input-wrap">
+                        <input type="number" id="investFreddy" readonly tabindex="-1" placeholder="11000" min="0" step="100">
+                        <span class="currency">$</span>
+                    </div>
+                </div>
+                <div class="yield-field">
+                    <label for="investLawyer">עו"ד אורי בר</label>
+                    <div class="yield-input-wrap">
+                        <input type="number" id="investLawyer" readonly tabindex="-1" placeholder="2000" min="0" step="100">
+                        <span class="currency">$</span>
+                    </div>
+                </div>
+                <div class="yield-field">
+                    <label for="investSign">תשלום לדורי (חתימה)</label>
+                    <div class="yield-input-wrap">
+                        <input type="number" id="investSign" readonly tabindex="-1" placeholder="125" min="0" step="25">
+                        <span class="currency">$</span>
+                    </div>
+                </div>
+                </div>
+                <div class="invest-group-title">הנחות לחישוב</div>
+                <div class="yield-field">
+                    <label for="investRate">שער הדולר</label>
+                    <div class="yield-input-wrap">
+                        <input type="number" id="investRate" placeholder="3.67" min="0" step="0.01">
+                        <span class="currency">₪</span>
+                    </div>
+                </div>
+                <div class="yield-field">
+                    <label for="investProfitPct">אחוז רווח נדרש</label>
+                    <div class="yield-input-wrap">
+                        <input type="number" id="investProfitPct" placeholder="20" min="0" step="1">
+                        <span class="currency">%</span>
+                    </div>
+                </div>
+                <div class="yield-field">
+                    <label for="investSale">מחיר מכירה</label>
+                    <div class="yield-input-wrap">
+                        <input type="number" id="investSale" placeholder="350000" min="0" step="1000">
+                        <span class="currency">$</span>
+                    </div>
+                </div>
+                <div class="yield-field">
+                    <label for="investFee">ניכוי במכירה</label>
+                    <div class="yield-input-wrap">
+                        <input type="number" id="investFee" placeholder="10" min="0" step="1">
+                        <span class="currency">%</span>
+                    </div>
+                </div>
+                </div>
+                <div class="invest-output">
+                <div class="invest-results" id="investResults"></div>
+                <div class="invest-note">הרווח = מחיר המכירה אחרי הניכוי פחות ההשקעה הכספית; אחוז הרווח הוא הרווח ביחס להשקעה.</div>
+                </div>
+                </div>
+                </div>
+            </div>
+
+            <div class="footer-links">
+                <a href="https://gengine.co/home" target="_blank" rel="noopener">גרמסונית</a>
+                <a href="https://gremson.com/" target="_blank" rel="noopener">כרטיס ביקור GREMSON LLC</a>
+            </div>
+        </main>
     </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Get references to all input elements
@@ -1357,6 +1581,434 @@
             updateH5(); // Initial call for H5 (C1/F1)
             // No initial call for getCompsData on load if addressInput is empty
         });
+    </script>
+
+    <script>
+        const FIREBASE_BASE = 'https://timer-4672a-default-rtdb.europe-west1.firebasedatabase.app';
+        const FIREBASE_APP_PATH = 'app-1b3c84cf218410393163a85b';
+
+        function firebaseUrl(key) {
+            return `${FIREBASE_BASE}/${FIREBASE_APP_PATH}/${key}.json`;
+        }
+
+        (function initYieldCalculator() {
+            const priceInput = document.getElementById('yieldPrice');
+            const rentInput = document.getElementById('yieldRent');
+            const resultEl = document.getElementById('yieldResult');
+            const formulaEl = document.getElementById('yieldFormula');
+            if (!priceInput || !rentInput || !resultEl) return;
+
+            // פתיחה/סגירה בלחיצה על הכותרת (סגור כברירת מחדל, כמו מעקב הקילומטראז')
+            const yieldBox = document.getElementById('yieldCalc');
+            const yieldHeader = yieldBox.querySelector('.yield-header');
+            const yieldArrow = yieldHeader.querySelector('.col-arrow');
+            const toggleYield = () => {
+                const willOpen = yieldBox.classList.contains('collapsed');
+                yieldBox.classList.toggle('collapsed', !willOpen);
+                yieldHeader.setAttribute('aria-expanded', String(willOpen));
+                yieldArrow.textContent = willOpen ? '▾' : '▸';
+            };
+            yieldHeader.addEventListener('click', toggleYield);
+            yieldHeader.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleYield();
+                }
+            });
+
+            const STORAGE_KEY = 'yield-calc-values';
+
+            function calculate() {
+                const price = parseFloat(priceInput.value);
+                const rent = parseFloat(rentInput.value);
+
+                if (!price || price <= 0 || !rent || rent <= 0) {
+                    resultEl.textContent = '—';
+                    if (formulaEl) formulaEl.textContent = '';
+                    return;
+                }
+
+                const annualYield = (rent * 12 / price) * 100;
+                resultEl.textContent = `${annualYield.toFixed(2)}%`;
+
+                // שורת הסבר: איך התוצאה חושבה, עם המספרים בפועל
+                if (formulaEl) {
+                    const fmt = n => n.toLocaleString('en-US');
+                    formulaEl.textContent = `(${fmt(rent)} × 12) ÷ ${fmt(price)} × 100 = ${annualYield.toFixed(2)}%`;
+                }
+            }
+
+            function loadYieldValues() {
+                try {
+                    return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function save() {
+                const values = { price: priceInput.value, rent: rentInput.value, updatedAt: Date.now() };
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+                } catch (e) {
+                    // לא קריטי אם לא ניתן לשמור מקומית
+                }
+
+                // מסנכרן גם לענן, כדי שהערכים יופיעו גם בשאר המכשירים
+                fetch(firebaseUrl('yield-calc'), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(values)
+                }).catch(err => {
+                    console.error('סנכרון מחשבון התשואה לענן נכשל (נשמר מקומית בלבד):', err);
+                });
+            }
+
+            // ברירות מחדל - רק אם המשתמש עוד לא שמר ערכים משלו
+            priceInput.value = '3000000';
+            rentInput.value = '8000';
+
+            const saved = loadYieldValues();
+            if (saved) {
+                priceInput.value = saved.price || '3000000';
+                rentInput.value = saved.rent || '8000';
+            }
+
+            [priceInput, rentInput].forEach(input => {
+                input.addEventListener('input', () => {
+                    calculate();
+                    save();
+                });
+            });
+
+            calculate();
+
+            // סנכרון חי בין מכשירים: לעולם לא דורס שדה עם ערך אמיתי בגלל שהצד השני ריק -
+            // אם רק לצד אחד יש ערך, משמרים אותו ודוחפים אותו הלאה לצד השני
+            (function connectYieldSync() {
+                let es;
+                try {
+                    es = new EventSource(firebaseUrl('yield-calc'));
+                } catch (e) {
+                    return;
+                }
+
+                function pickField(localVal, cloudVal) {
+                    const cloudEmpty = cloudVal == null || cloudVal === '';
+                    const localEmpty = localVal == null || localVal === '';
+                    if (cloudEmpty && !localEmpty) return localVal;
+                    if (!cloudEmpty) return cloudVal;
+                    return localVal;
+                }
+
+                // מי שנערך לאחרונה בפועל (לפי updatedAt) מנצח כמקשה אחת - לא "מי שלא ריק",
+                // כי "מי שלא ריק" גרם לכך שמכשיר ישן/רדום עם ערך ישן דרס לצמיתות עריכה
+                // אמיתית וטרייה שנעשתה במכשיר אחר. אם אין חותמת זמן בכלל (נתון ישן), חוזרים
+                // לשיטה הישנה כגיבוי בלבד.
+                function mergeAndApply(cloudValues) {
+                    const local = loadYieldValues() || {};
+                    const cloud = cloudValues || {};
+                    const localTime = local.updatedAt || 0;
+                    const cloudTime = cloud.updatedAt || 0;
+
+                    let merged;
+                    if (cloudTime > localTime) {
+                        merged = {
+                            price: (cloud.price != null && cloud.price !== '') ? cloud.price : local.price,
+                            rent: (cloud.rent != null && cloud.rent !== '') ? cloud.rent : local.rent,
+                            updatedAt: cloudTime
+                        };
+                    } else if (localTime > cloudTime) {
+                        merged = { price: local.price, rent: local.rent, updatedAt: localTime };
+                    } else {
+                        merged = {
+                            price: pickField(local.price, cloud.price),
+                            rent: pickField(local.rent, cloud.rent),
+                            updatedAt: Math.max(localTime, cloudTime)
+                        };
+                    }
+
+                    const changed = JSON.stringify(merged) !== JSON.stringify(cloud);
+
+                    try {
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+                    } catch (e) {
+                        // לא קריטי
+                    }
+
+                    if (merged.price) priceInput.value = merged.price;
+                    if (merged.rent) rentInput.value = merged.rent;
+                    calculate();
+
+                    if (changed) {
+                        fetch(firebaseUrl('yield-calc'), {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(merged)
+                        }).catch(() => {});
+                    }
+                }
+
+                es.addEventListener('put', (e) => {
+                    try {
+                        const parsed = JSON.parse(e.data);
+                        mergeAndApply(parsed.data || {});
+                    } catch (err) {
+                        console.error('שגיאה בפענוח סנכרון מחשבון תשואה:', err);
+                    }
+                });
+
+                es.addEventListener('patch', () => {
+                    fetch(firebaseUrl('yield-calc'))
+                        .then(r => r.json())
+                        .then(cloudValues => mergeAndApply(cloudValues || {}))
+                        .catch(() => {});
+                });
+            })();
+        })();
+
+        // ---- מחשבון השקעה (שותפות) - חישוב לפי עלויות הפרויקט, שער דולר, אחוז רווח נדרש ומחיר מכירה ----
+        (function initInvestCalculator() {
+            const box = document.getElementById('investCalc');
+            const resultsEl = document.getElementById('investResults');
+            if (!box || !resultsEl) return;
+
+            // עלויות הפרויקט קבועות - לא ניתנות לעריכה ולא מסתנכרנות
+            const FIXED_COSTS = [
+                ['investBuild', 250000], ['investLand', 30000], ['investFreddy', 11000],
+                ['investLawyer', 2000], ['investSign', 125]
+            ];
+            const FIELDS = [
+                ['investRate', 3.67], ['investProfitPct', 20], ['investSale', 350000], ['investFee', 10]
+            ];
+            const STORAGE_KEY = 'invest-calc-values';
+            const inputs = {};
+            FIXED_COSTS.forEach(([id, val]) => {
+                inputs[id] = document.getElementById(id);
+                inputs[id].value = String(val);
+            });
+            FIELDS.forEach(([id]) => { inputs[id] = document.getElementById(id); });
+
+            const header = box.querySelector('.yield-header');
+            const arrow = header.querySelector('.col-arrow');
+            const toggle = () => {
+                const willOpen = box.classList.contains('collapsed');
+                box.classList.toggle('collapsed', !willOpen);
+                header.setAttribute('aria-expanded', String(willOpen));
+                arrow.textContent = willOpen ? '▾' : '▸';
+            };
+            header.addEventListener('click', toggle);
+            header.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggle();
+                }
+            });
+
+            // רשימת העלויות נפתחת/נסגרת בלחיצה על הכותרת שלה (סגורה כברירת מחדל)
+            const costsToggle = document.getElementById('investCostsToggle');
+            const costsBody = document.getElementById('investCostsBody');
+            const costsArrow = costsToggle.querySelector('.col-arrow');
+            const toggleCosts = () => {
+                const willOpen = costsBody.hidden;
+                costsBody.hidden = !willOpen;
+                costsToggle.setAttribute('aria-expanded', String(willOpen));
+                costsArrow.textContent = willOpen ? '▾' : '▸';
+            };
+            costsToggle.addEventListener('click', toggleCosts);
+            costsToggle.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleCosts();
+                }
+            });
+
+            const num = (id) => {
+                const v = parseFloat(inputs[id].value);
+                return isNaN(v) ? 0 : v;
+            };
+            const usd = (n) => (n < 0 ? '-$' : '$') + Math.abs(Math.round(n)).toLocaleString('en-US');
+            const nis = (n) => (n < 0 ? '-₪' : '₪') + Math.abs(Math.round(n)).toLocaleString('en-US');
+
+            function row(label, mainValue, subValue, negative) {
+                return `<div class="invest-row"><span class="invest-label">${label}</span>` +
+                    `<span class="invest-value${negative ? ' negative' : ''}">${mainValue}${subValue ? `<small>${subValue}</small>` : ''}</span></div>`;
+            }
+
+            function calculate() {
+                const invested = num('investBuild') + num('investLand') + num('investFreddy') + num('investLawyer') + num('investSign');
+                const rate = num('investRate');
+                const required = num('investProfitPct') / 100;
+                const sale = num('investSale');
+                const fee = num('investFee') / 100;
+
+                document.getElementById('investCostsTotal').textContent = invested > 0 ? '· ' + usd(invested) : '';
+
+                if (invested <= 0 || fee >= 1) {
+                    resultsEl.innerHTML = '<div class="invest-note">הזינו עלויות כדי לראות חישוב</div>';
+                    return;
+                }
+
+                const afterFee = 1 - fee;
+                const nisOf = (usdAmount) => (rate > 0 ? nis(usdAmount * rate) : '');
+
+                const requiredSale = invested * (1 + required) / afterFee;
+                const profitAtRequired = invested * required;
+
+                const profitAtSale = afterFee * sale - invested;
+                const profitPctAtSale = (profitAtSale / invested) * 100;
+
+                const maxInvest = afterFee * sale / (1 + required);
+                const profitAtMax = maxInvest * required;
+
+                const pctText = (required * 100).toFixed(0);
+                resultsEl.innerHTML =
+                    row('השקעה כספית (סך העלויות)', usd(invested), nisOf(invested)) +
+                    row(`מחיר מכירה נדרש לרווח של ${pctText}%`, usd(requiredSale), `רווח ${usd(profitAtRequired)} · ${nisOf(profitAtRequired)}`) +
+                    row(`רווח במחיר מכירה ${usd(sale)}`, usd(profitAtSale), `${profitPctAtSale.toFixed(2)}% · ${nisOf(profitAtSale)}`, profitAtSale < 0) +
+                    row(`השקעה מקסימלית למכירה ב-${usd(sale)} ורווח ${pctText}%`, usd(maxInvest), `רווח ${usd(profitAtMax)} · ${nisOf(profitAtMax)}`);
+            }
+
+            function loadSaved() {
+                try {
+                    return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function currentValues() {
+                const values = {};
+                FIELDS.forEach(([id]) => { values[id] = inputs[id].value; });
+                return values;
+            }
+
+            function save() {
+                const values = Object.assign(currentValues(), { updatedAt: Date.now() });
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+                } catch (e) {}
+                fetch(firebaseUrl('invest-calc'), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(values)
+                }).catch(err => console.error('סנכרון מחשבון ההשקעה לענן נכשל (נשמר מקומית בלבד):', err));
+            }
+
+            FIELDS.forEach(([id, def]) => { inputs[id].value = String(def); });
+            const saved = loadSaved();
+            if (saved) {
+                FIELDS.forEach(([id]) => {
+                    if (saved[id] != null && saved[id] !== '') inputs[id].value = saved[id];
+                });
+            }
+
+            FIELDS.forEach(([id]) => {
+                inputs[id].addEventListener('input', () => {
+                    calculate();
+                    save();
+                });
+            });
+
+            calculate();
+
+            // סנכרון חי בין מכשירים - אותה שיטה כמו במחשבון התשואה: מי שנערך לאחרונה מנצח כמקשה אחת
+            (function connectInvestSync() {
+                let es;
+                try {
+                    es = new EventSource(firebaseUrl('invest-calc'));
+                } catch (e) {
+                    return;
+                }
+
+                const isEmpty = (v) => v == null || v === '';
+                const pick = (localVal, cloudVal) => (!isEmpty(cloudVal) ? cloudVal : localVal);
+
+                function mergeAndApply(cloudValues) {
+                    const local = loadSaved() || {};
+                    const cloud = cloudValues || {};
+                    const localTime = local.updatedAt || 0;
+                    const cloudTime = cloud.updatedAt || 0;
+
+                    const merged = {};
+                    FIELDS.forEach(([id]) => {
+                        if (localTime > cloudTime) merged[id] = !isEmpty(local[id]) ? local[id] : cloud[id];
+                        else merged[id] = pick(local[id], cloud[id]);
+                    });
+                    merged.updatedAt = Math.max(localTime, cloudTime);
+
+                    if (!FIELDS.some(([id]) => !isEmpty(merged[id]))) return;
+
+                    try {
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+                    } catch (e) {}
+
+                    FIELDS.forEach(([id]) => {
+                        if (!isEmpty(merged[id])) inputs[id].value = merged[id];
+                    });
+                    calculate();
+
+                    if (JSON.stringify(merged) !== JSON.stringify(cloud)) {
+                        fetch(firebaseUrl('invest-calc'), {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(merged)
+                        }).catch(() => {});
+                    }
+                }
+
+                es.addEventListener('put', (e) => {
+                    try {
+                        const parsed = JSON.parse(e.data);
+                        mergeAndApply(parsed.data || {});
+                    } catch (err) {
+                        console.error('שגיאה בפענוח סנכרון מחשבון השקעה:', err);
+                    }
+                });
+
+                es.addEventListener('patch', () => {
+                    fetch(firebaseUrl('invest-calc'))
+                        .then(r => r.json())
+                        .then(cloudValues => mergeAndApply(cloudValues || {}))
+                        .catch(() => {});
+                });
+            })();
+        })();
+
+    </script>
+    <script>
+        // תפריט צד (מחשב): חלון אחד בכל פעם. במובייל הכל נערם והתפריט מוסתר.
+        (function initNav() {
+            const panels = Array.from(document.querySelectorAll('.view-panel'));
+            const buttons = Array.from(document.querySelectorAll('#sideNav button[data-target]'));
+            const KEY = 'gremson-view';
+
+            function show(view) {
+                if (!panels.some(p => p.dataset.view === view)) view = 'deal';
+                panels.forEach(p => p.classList.toggle('view-active', p.dataset.view === view));
+                buttons.forEach(b => b.classList.toggle('active', b.dataset.target === view));
+                try { localStorage.setItem(KEY, view); } catch (e) {}
+            }
+
+            buttons.forEach(b => b.addEventListener('click', () => show(b.dataset.target)));
+
+            let initial = 'deal';
+            try { initial = localStorage.getItem(KEY) || 'deal'; } catch (e) {}
+            const hashView = (location.hash || '').replace('#', '');
+            const fromHash = panels.some(p => p.dataset.view === hashView);
+            if (fromHash) initial = hashView;
+            show(initial);
+
+            // במובייל: קישור עמוק פותח את הקוביה המבוקשת וגולל אליה
+            if (fromHash && window.matchMedia('(max-width: 820px)').matches) {
+                const target = panels.find(p => p.dataset.view === hashView);
+                if (target && target.classList.contains('collapsed')) {
+                    const head = target.querySelector('.yield-header');
+                    if (head) head.click();
+                }
+                if (target) setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+            }
+        })();
     </script>
 </body>
 </html>
