@@ -2741,5 +2741,27 @@
             }
         })();
     </script>
+    <script>
+        // עדכון עצמי: בכל פתיחה/חזרה לדף בודקים מול האתר אם יצאה גרסה חדשה, ואם כן טוענים מחדש פעם אחת.
+        (function selfUpdate() {
+            const BUILD_ID = '2026-10-26-a';
+            async function check() {
+                try {
+                    const res = await fetch(location.pathname + '?_=' + Date.now(), { cache: 'no-store' });
+                    const text = await res.text();
+                    const m = text.match(/const BUILD_ID = '([^']+)'/);
+                    if (!m || m[1] === BUILD_ID) return;
+                    const key = 'build-reload-' + m[1];
+                    if (sessionStorage.getItem(key)) return;
+                    sessionStorage.setItem(key, '1');
+                    location.reload();
+                } catch (e) {}
+            }
+            check();
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') check();
+            });
+        })();
+    </script>
 </body>
 </html>
