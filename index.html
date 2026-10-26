@@ -2432,7 +2432,7 @@
             }
             showUsage();
 
-            async function rc(path, params) {
+            async function rc(path, params, notFoundValue) {
                 const key = getKey();
                 if (!key) throw new Error('NO_KEY');
                 if (usage().n >= FREE_LIMIT && !window.confirm('נוצלו ' + usage().n + ' בקשות החודש, כלומר המכסה החינמית נגמרה. כל בקשה נוספת תחויב ב-$0.20. להמשיך?')) throw new Error('LIMIT');
@@ -2440,6 +2440,7 @@
                 const res = await fetch('https://api.rentcast.io/v1' + path + '?' + new URLSearchParams(params), { headers: { 'X-Api-Key': key, Accept: 'application/json' } });
                 if (res.status === 401 || res.status === 403) throw new Error('BAD_KEY');
                 if (res.status === 429) throw new Error('QUOTA');
+                if (res.status === 404) { if (notFoundValue !== undefined) return notFoundValue; throw new Error('NOTFOUND'); }
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 return res.json();
             }
@@ -2449,6 +2450,7 @@
                 if (e.message === 'BAD_KEY') return 'המפתח לא תקין או לא פעיל. בדקו אותו בחלק "מפתח נתונים".';
                 if (e.message === 'QUOTA') return 'נגמרה מכסת הבקשות החודשית של המפתח.';
                 if (e.message === 'LIMIT') return 'הפעולה בוטלה כדי לא לחרוג מהמכסה החינמית.';
+                if (e.message === 'NOTFOUND') return 'RentCast לא מכיר את הכתובת הזו. בדקו מספר בית ומיקוד, או בחרו את הבניין במפה.';
                 return 'הבקשה נכשלה (' + e.message + '). נסו שוב בעוד רגע.';
             }
 
@@ -2466,35 +2468,46 @@
                 return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
             };
 
-            async function ensureSubjectCoords() {
-                if (subject && !isNaN(subject.lat)) return;
-                const found = await suggest(addressInput.value.trim());
-                if (!found.length) throw new Error('לא נמצאה הכתובת - בחרו מהרשימה או מהמפה.');
-                const f = found[0];
-                placeSubject({ lat: f.lat, lon: f.lon, label: f.label, zip: f.zip || '' }, 17);
+            // "Fleet Street, Jacksonville, FL 32207 3446" (מספר בית בסוף) -> "3446 Fleet Street, Jacksonville, FL 32207"
+            function normalizeAddress(text) {
+                const t = text.replace(/\s+/g, ' ').trim();
+                const m = t.match(/^(.*\b\d{5}(?:-\d{4})?)\s+(\d{1,6})$/);
+                return m ? m[2] + ' ' + m[1] : t;
+            }
+
+            // אם הכתובת הוקלדה ידנית (ולא נבחרה מהרשימה) - מאתרים אותה ומחליפים בכתובת המלאה והמדויקת
+            async function resolveSubject(address) {
+                if (subject && subject.label === address && !isNaN(subject.lat)) return address;
+                const found = await suggest(address);
+                const best = found.find((f) => f.exact) || found[0];
+                if (!best) throw new Error('לא נמצאה הכתובת - בחרו מהרשימה או מהמפה.');
+                placeSubject({ lat: best.lat, lon: best.lon, label: best.label, zip: best.zip || '' }, 17);
+                addressInput.value = best.label;
+                try { localStorage.setItem(addressInput.id, best.label); } catch (e) {}
+                return best.label;
             }
 
             async function loadSubjectRecord() {
-                const rows = await rc('/properties', { address: subject.label || addressInput.value.trim() });
+                const rows = await rc('/properties', { address: subject.label || addressInput.value.trim() }, null);
                 return Array.isArray(rows) && rows.length ? rows[0] : null;
             }
 
             async function runSearch() {
-                const address = addressInput.value.trim();
+                let address = normalizeAddress(addressInput.value.trim());
                 if (!address) { setStatus('הקלידו כתובת או בחרו במפה.', true); return; }
                 searchBtn.disabled = true;
                 summaryEl.innerHTML = ''; resultsEl.innerHTML = '';
                 try {
                     if (!getKey()) throw new Error('NO_KEY');
                     setStatus('מאתר את הנכס…');
-                    await ensureSubjectCoords();
+                    address = await resolveSubject(address);
                     const radius = parseFloat($('compRadius').value) || 0.5;
                     const months = parseInt($('compMonths').value, 10) || 6;
                     const sameZip = $('compSameZip').checked;
 
                     const subj = await loadSubjectRecord();
                     setStatus('מחפש מכירות באזור…');
-                    const nearby = await rc('/properties', { latitude: subject.lat, longitude: subject.lon, radius: radius, limit: 500 });
+                    const nearby = await rc('/properties', { latitude: subject.lat, longitude: subject.lon, radius: radius, limit: 500 }, []);
 
                     const since = new Date(); since.setMonth(since.getMonth() - months);
                     const subjZip = (subj && subj.zipCode) || subject.zip || '';
@@ -2615,10 +2628,11 @@
             }
 
             async function avm(kind) {
-                const address = addressInput.value.trim();
+                let address = normalizeAddress(addressInput.value.trim());
                 if (!address) { setStatus('הקלידו כתובת או בחרו במפה.', true); return; }
                 try {
                     if (!getKey()) throw new Error('NO_KEY');
+                    address = await resolveSubject(address);
                     setStatus(kind === 'value' ? 'מחשב הערכת שווי…' : 'מחשב הערכת שכירות…');
                     const path = kind === 'value' ? '/avm/value' : '/avm/rent/long-term';
                     const r = await rc(path, { address: (subject && subject.label) || address, compCount: 8 });
