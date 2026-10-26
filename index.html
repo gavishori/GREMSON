@@ -525,6 +525,103 @@
             #compMap { min-height: 320px; height: 320px; }
         }
 
+        /* ---- פורקלוז'ר: קובץ מהקאונטי על מפה, עם סינון לפי סטטוס ---- */
+        .fc-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+            gap: 16px;
+            align-items: stretch;
+        }
+
+        .fc-side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+
+        .fc-upload { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+        .fc-file-btn { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+
+        .fc-file-info { font-size: 0.8rem; color: #cfe0ff; }
+
+        .fc-filter {
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .fc-filter[hidden] { display: none; }
+
+        .fc-filter-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-weight: 700; font-size: 0.85rem; margin-bottom: 8px; }
+
+        .fc-link-btn {
+            padding: 0;
+            border: none;
+            background: none;
+            color: #ffd166;
+            font: inherit;
+            font-weight: 400;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .fc-link-btn:hover { text-decoration: underline; }
+
+        .fc-count { margin-right: auto; font-weight: 400; font-size: 0.8rem; color: #cfe0ff; }
+
+        .fc-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+        .fc-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            font: inherit;
+            font-size: 0.82rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .fc-chip.off { opacity: 0.45; background: transparent; }
+
+        .fc-dot { width: 11px; height: 11px; border-radius: 50%; border: 2px solid #fff; flex-shrink: 0; }
+
+        .fc-chip small { color: #cfe0ff; font-size: 0.75rem; }
+
+        .fc-results { max-height: calc(100vh - 330px); min-height: 160px; }
+
+        .fc-results tr.no-geo td.addr { color: #ff8f8f; }
+
+        .fc-results tr.picked { background: rgba(255, 209, 102, 0.22); }
+
+        .fc-badge { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+
+        #fcMap {
+            width: 100%;
+            height: 100%;
+            min-height: 480px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .fc-pop { direction: rtl; text-align: right; font-size: 0.82rem; line-height: 1.45; min-width: 220px; }
+        .fc-pop b.addr { display: block; direction: ltr; text-align: left; font-size: 0.92rem; margin-bottom: 4px; }
+        .fc-pop .row { display: flex; justify-content: space-between; gap: 12px; }
+        .fc-pop .row span:last-child { direction: ltr; font-weight: 700; }
+        .fc-pop .plaintiff { color: #555; font-size: 0.75rem; margin-top: 4px; }
+        .fc-pop .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+        .fc-pop .links a, .fc-pop .links button { color: #1e5bd8; font: inherit; font-size: 0.78rem; background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; }
+
+        @media (max-width: 820px) {
+            .fc-layout { grid-template-columns: minmax(0, 1fr); }
+            #fcMap { min-height: 340px; height: 340px; }
+            .fc-results { max-height: 420px; }
+        }
+
         /* ---- מחשבון תשואה ---- */
         .yield-calc {
             flex-shrink: 0;
@@ -966,6 +1063,7 @@
             <div class="nav-group">חישובים</div>
             <button type="button" class="nav-item" data-target="deal"><span class="nav-ico">🏢</span><span class="nav-label">כדאיות עסקה ומימון</span></button>
             <button type="button" class="nav-item" data-target="comps"><span class="nav-ico">📍</span><span class="nav-label">Comps</span></button>
+            <button type="button" class="nav-item" data-target="foreclosure"><span class="nav-ico">🏚️</span><span class="nav-label">פורקלוז'ר</span></button>
             <button type="button" class="nav-item" data-target="yield"><span class="nav-ico">💰</span><span class="nav-label">מחשבון תשואה</span></button>
             <button type="button" class="nav-item" data-target="invest"><span class="nav-ico">🏗️</span><span class="nav-label">מחשבון השקעה</span></button>
 
@@ -1266,6 +1364,36 @@
                     <div class="comps-map-wrap">
                         <div id="compMap" aria-label="מפה לבחירת כתובת"></div>
                         <div class="map-hint">לחיצה על המפה בוחרת כתובת</div>
+                    </div>
+                </div>
+            </section>
+            <section class="panel view-panel" data-view="foreclosure">
+                <h2 class="sec-title">פורקלוז'ר - מכירות פומביות מהקאונטי</h2>
+                <div class="fc-layout">
+                    <div class="fc-side">
+                        <div class="fc-upload">
+                            <label class="comps-button fc-file-btn">
+                                📂 העלאת קובץ CSV
+                                <input type="file" id="fcFile" accept=".csv,text/csv" hidden>
+                            </label>
+                            <button type="button" id="fcClear" class="comps-button secondary" hidden>ניקוי</button>
+                            <span id="fcFileInfo" class="fc-file-info">קובץ QuickSearch.csv שיוצא מאתר המכירות של הקאונטי</span>
+                        </div>
+                        <div id="fcStatus" class="comp-status"></div>
+                        <div class="fc-filter" id="fcFilterBox" hidden>
+                            <div class="fc-filter-head">
+                                <span>סינון לפי סטטוס</span>
+                                <button type="button" class="fc-link-btn" id="fcAll">הכל</button>
+                                <button type="button" class="fc-link-btn" id="fcNone">כלום</button>
+                                <span id="fcCount" class="fc-count"></span>
+                            </div>
+                            <div id="fcChips" class="fc-chips"></div>
+                        </div>
+                        <div id="fcResults" class="comp-results fc-results"></div>
+                    </div>
+                    <div class="comps-map-wrap">
+                        <div id="fcMap" aria-label="מפת נכסים במכירה פומבית"></div>
+                        <div class="map-hint">לחיצה על נקודה מציגה את פרטי התיק</div>
                     </div>
                 </div>
             </section>
@@ -2685,6 +2813,341 @@
         })();
     </script>
     <script>
+        // ---- פורקלוז'ר: קובץ CSV מאתר המכירות של הקאונטי, על מפה עם סינון לפי סטטוס ----
+        (function initForeclosure() {
+            const $ = (id) => document.getElementById(id);
+            const DATA_STORE = 'foreclosure-data';
+            const FILTER_STORE = 'foreclosure-hidden-statuses';
+            const GEO_STORE = 'foreclosure-geocache';
+            const STATE = 'FL';
+
+            const STATUS_INFO = {
+                'Accepting Proxy': { label: 'פתוח להצעות', color: '#8bc34a' },
+                'Sold': { label: 'נמכר', color: '#9aa5b8' },
+                'Canceled': { label: 'בוטל', color: '#ff6b6b' }
+            };
+            const EXTRA_COLORS = ['#4f8cff', '#ffc247', '#c77dff', '#4dd0e1', '#ff9f43'];
+
+            const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            const money = (v) => {
+                if (v === 'HIDDEN') return 'מוסתר';
+                const n = parseFloat(v);
+                return (!v || isNaN(n) || n === 0) ? '—' : '$' + Math.round(n).toLocaleString('en-US');
+            };
+            const load = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch (e) { return fallback; } };
+            const save = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} };
+
+            let data = load(DATA_STORE, null); // { fileName, loadedAt, rows }
+            let hidden = new Set(load(FILTER_STORE, []));
+            const geoCache = load(GEO_STORE, {});
+            const markers = new Map(); // row index -> marker
+            let map = null, layer = null, geocodeRun = 0;
+
+            function statusInfo(status) {
+                if (STATUS_INFO[status]) return STATUS_INFO[status];
+                const others = Array.from(new Set(data.rows.map(r => r.status))).filter(s => !STATUS_INFO[s]);
+                return { label: status || 'ללא סטטוס', color: EXTRA_COLORS[others.indexOf(status) % EXTRA_COLORS.length] };
+            }
+
+            // ---------- קריאת CSV (שדות במירכאות, שורות שמסתיימות ב-CR, LF או CRLF) ----------
+            function parseCsv(text) {
+                const rows = [];
+                let row = [], field = '', quoted = false;
+                for (let i = 0; i < text.length; i++) {
+                    const c = text[i];
+                    if (quoted) {
+                        if (c === '"' && text[i + 1] === '"') { field += '"'; i++; }
+                        else if (c === '"') quoted = false;
+                        else field += c;
+                    } else if (c === '"') quoted = true;
+                    else if (c === ',') { row.push(field); field = ''; }
+                    else if (c === '\r' || c === '\n') {
+                        if (c === '\r' && text[i + 1] === '\n') i++;
+                        row.push(field); field = '';
+                        if (row.some(f => f.trim())) rows.push(row);
+                        row = [];
+                    } else field += c;
+                }
+                row.push(field);
+                if (row.some(f => f.trim())) rows.push(row);
+                return rows;
+            }
+
+            function toRecords(text) {
+                const table = parseCsv(text.replace(/^﻿/, ''));
+                if (table.length < 2) throw new Error('הקובץ ריק');
+                const head = table[0].map(h => h.trim().toLowerCase());
+                const col = (name) => head.indexOf(name.toLowerCase());
+                const need = { address: col('Address'), status: col('Status') };
+                if (need.address < 0 || need.status < 0) throw new Error('לא נמצאו העמודות Address ו-Status - האם זה הקובץ מאתר המכירות?');
+                const pick = (r, name) => { const i = col(name); return i < 0 ? '' : (r[i] || '').trim().replace(/\s+/g, ' '); };
+                return table.slice(1).map(r => ({
+                    saleDate: pick(r, 'Sale Date'),
+                    addDate: pick(r, 'Add Date'),
+                    caseNumber: pick(r, 'Case Number'),
+                    status: pick(r, 'Status'),
+                    judgment: pick(r, 'Final Judgment'),
+                    openingBid: pick(r, 'Opening Bid'),
+                    assessed: pick(r, 'Assessed Value'),
+                    plaintiff: pick(r, 'Certificate Holder Name'),
+                    maxBid: pick(r, 'Plaintiff Max Bid'),
+                    address: pick(r, 'Address'),
+                    city: pick(r, 'City'),
+                    zip: pick(r, 'Zip'),
+                    parcel: pick(r, 'Parcel ID')
+                }));
+            }
+
+            // ---------- מיקום כתובות (ArcGIS, עם זיכרון בדפדפן כדי לא לחפש שוב) ----------
+            const fullAddress = (r) => `${r.address}, ${r.city || 'JACKSONVILLE'}, ${STATE} ${r.zip}`.trim();
+
+            async function geocode(r) {
+                const key = fullAddress(r);
+                if (geoCache[key]) return geoCache[key];
+                const url = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&maxLocations=1&SingleLine=' + encodeURIComponent(key);
+                const res = await fetch(url);
+                const json = await res.json();
+                const c = json.candidates && json.candidates[0];
+                if (!c || c.score < 80) return null;
+                geoCache[key] = { lat: c.location.y, lon: c.location.x };
+                save(GEO_STORE, geoCache);
+                return geoCache[key];
+            }
+
+            async function geocodeAll() {
+                const run = ++geocodeRun;
+                const todo = data.rows.map((r, i) => i).filter(i => data.rows[i].address && !data.rows[i].geo);
+                let done = 0, failed = 0;
+                const report = () => setStatus(todo.length && done < todo.length ? `ממקם כתובות על המפה... ${done}/${todo.length}` : (failed ? `${failed} כתובות לא נמצאו על המפה (מסומנות באדום בטבלה)` : ''));
+                report();
+                let next = 0;
+                async function worker() {
+                    while (next < todo.length && run === geocodeRun) {
+                        const i = todo[next++];
+                        try { data.rows[i].geo = await geocode(data.rows[i]); } catch (e) { data.rows[i].geo = null; }
+                        if (!data.rows[i].geo) failed++;
+                        done++;
+                        report();
+                        if (data.rows[i].geo) addMarker(i);
+                    }
+                }
+                await Promise.all([worker(), worker(), worker(), worker()]);
+                if (run !== geocodeRun) return;
+                save(DATA_STORE, data);
+                renderTable();
+                fitToMarkers();
+            }
+
+            // ---------- מפה ----------
+            function initMap() {
+                if (typeof L === 'undefined') {
+                    $('fcMap').innerHTML = '<div style="padding:20px;color:#cfe0ff">לא ניתן לטעון את המפה</div>';
+                    return;
+                }
+                map = L.map('fcMap', { zoomControl: true }).setView([30.33, -81.66], 10);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(map);
+                layer = L.layerGroup().addTo(map);
+            }
+
+            function popupHtml(r) {
+                const re = r.parcel.replace(/\D/g, '');
+                const q = encodeURIComponent(fullAddress(r));
+                return `<div class="fc-pop">
+                    <b class="addr">${esc(r.address)}, ${esc(r.city)} ${esc(r.zip)}</b>
+                    <div class="row"><span>תאריך מכירה</span><span>${esc(r.saleDate)}</span></div>
+                    <div class="row"><span>סטטוס</span><span>${esc(statusInfo(r.status).label)}</span></div>
+                    <div class="row"><span>פסק דין סופי</span><span>${money(r.judgment)}</span></div>
+                    <div class="row"><span>הצעת פתיחה</span><span>${money(r.openingBid)}</span></div>
+                    <div class="row"><span>שווי שומה</span><span>${money(r.assessed)}</span></div>
+                    <div class="row"><span>הצעה מקס' של התובע</span><span>${money(r.maxBid)}</span></div>
+                    <div class="row"><span>מס' תיק</span><span>${esc(r.caseNumber)}</span></div>
+                    <div class="plaintiff">${esc(r.plaintiff)}</div>
+                    <div class="links">
+                        ${re.length >= 10 ? `<a href="https://paopropertysearch.coj.net/Basic/Detail.aspx?RE=${re}" target="_blank" rel="noopener">רשומת הנכס (PAO)</a>` : ''}
+                        <a href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener">Google Maps</a>
+                        <a href="https://www.zillow.com/homes/${q}_rb/" target="_blank" rel="noopener">Zillow</a>
+                        <button type="button" data-fc-comps="${esc(fullAddress(r))}">קומפס לנכס</button>
+                    </div>
+                </div>`;
+            }
+
+            function addMarker(i) {
+                if (!map) return;
+                const r = data.rows[i];
+                const m = L.circleMarker([r.geo.lat, r.geo.lon], { radius: 8, color: '#fff', weight: 2, fillColor: statusInfo(r.status).color, fillOpacity: 0.95 })
+                    .bindPopup(() => popupHtml(r), { maxWidth: 300 })
+                    .on('click', () => highlightRow(i));
+                markers.set(i, m);
+                if (!hidden.has(r.status)) m.addTo(layer);
+            }
+
+            function rebuildMarkers() {
+                if (!map) return;
+                layer.clearLayers();
+                markers.clear();
+                if (!data) return;
+                data.rows.forEach((r, i) => { if (r.geo) addMarker(i); });
+            }
+
+            function applyFilterToMap() {
+                markers.forEach((m, i) => {
+                    const show = !hidden.has(data.rows[i].status);
+                    if (show && !layer.hasLayer(m)) m.addTo(layer);
+                    if (!show && layer.hasLayer(m)) layer.removeLayer(m);
+                });
+            }
+
+            function fitToMarkers() {
+                if (!map) return;
+                const pts = [];
+                markers.forEach(m => { if (layer.hasLayer(m)) pts.push(m.getLatLng()); });
+                if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.08), { maxZoom: 15 });
+            }
+
+            // ---------- סינון וטבלה ----------
+            function setStatus(text, isErr) {
+                $('fcStatus').textContent = text;
+                $('fcStatus').classList.toggle('err', !!isErr);
+            }
+
+            function renderChips() {
+                const box = $('fcFilterBox');
+                box.hidden = !data;
+                if (!data) return;
+                const counts = {};
+                data.rows.forEach(r => { counts[r.status] = (counts[r.status] || 0) + 1; });
+                const order = Object.keys(STATUS_INFO);
+                const statuses = Object.keys(counts).sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99));
+                $('fcChips').innerHTML = statuses.map(s => {
+                    const info = statusInfo(s);
+                    return `<button type="button" class="fc-chip${hidden.has(s) ? ' off' : ''}" data-status="${esc(s)}" title="${esc(s)}" aria-pressed="${!hidden.has(s)}">
+                        <span class="fc-dot" style="background:${info.color}"></span>${esc(info.label)} <small>${counts[s]}</small></button>`;
+                }).join('');
+                const shown = data.rows.filter(r => !hidden.has(r.status)).length;
+                $('fcCount').textContent = `מוצגים ${shown} מתוך ${data.rows.length}`;
+            }
+
+            function renderTable() {
+                const el = $('fcResults');
+                if (!data) { el.innerHTML = ''; return; }
+                const rows = data.rows.map((r, i) => ({ r, i })).filter(x => !hidden.has(x.r.status));
+                if (!rows.length) { el.innerHTML = '<div class="comp-note">אין תיקים בסטטוסים שנבחרו</div>'; return; }
+                el.innerHTML = `<table><thead><tr>
+                        <th>תאריך מכירה</th><th>כתובת</th><th>סטטוס</th><th>פסק דין</th><th>שומה</th><th>מקס' תובע</th>
+                    </tr></thead><tbody>${rows.map(({ r, i }) => {
+                        const info = statusInfo(r.status);
+                        const noGeo = r.address && r.geo === null;
+                        return `<tr data-i="${i}" class="${noGeo ? 'no-geo' : ''}">
+                            <td data-label="תאריך מכירה" class="num">${esc(r.saleDate)}</td>
+                            <td data-label="כתובת" class="addr" title="${noGeo ? 'הכתובת לא נמצאה על המפה' : ''}">${r.address ? esc(r.address) + (r.zip ? ' <small>' + esc(r.zip) + '</small>' : '') : '<span style="color:#9fb4dd">אין כתובת בקובץ</span>'}</td>
+                            <td data-label="סטטוס"><span class="fc-badge"><span class="fc-dot" style="background:${info.color}"></span>${esc(info.label)}</span></td>
+                            <td data-label="פסק דין" class="num">${money(r.judgment)}</td>
+                            <td data-label="שומה" class="num">${money(r.assessed)}</td>
+                            <td data-label="מקס' תובע" class="num">${money(r.maxBid)}</td>
+                        </tr>`;
+                    }).join('')}</tbody></table>`;
+            }
+
+            function highlightRow(i) {
+                const el = $('fcResults');
+                el.querySelectorAll('tr.picked').forEach(tr => tr.classList.remove('picked'));
+                const tr = el.querySelector(`tr[data-i="${i}"]`);
+                if (tr) { tr.classList.add('picked'); tr.scrollIntoView({ block: 'nearest' }); }
+            }
+
+            function renderAll() {
+                $('fcClear').hidden = !data;
+                $('fcFileInfo').textContent = data
+                    ? `${data.fileName} · ${data.rows.length} תיקים · נטען ${new Date(data.loadedAt).toLocaleDateString('he-IL')}`
+                    : 'קובץ QuickSearch.csv שיוצא מאתר המכירות של הקאונטי';
+                renderChips();
+                renderTable();
+            }
+
+            function setHidden(next) {
+                hidden = next;
+                save(FILTER_STORE, Array.from(hidden));
+                renderChips();
+                renderTable();
+                applyFilterToMap();
+            }
+
+            // ---------- אירועים ----------
+            $('fcFile').addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                e.target.value = '';
+                if (!file) return;
+                try {
+                    const rows = toRecords(await file.text());
+                    data = { fileName: file.name, loadedAt: Date.now(), rows };
+                    save(DATA_STORE, data);
+                    rebuildMarkers();
+                    renderAll();
+                    geocodeAll();
+                } catch (err) {
+                    setStatus(err.message || 'לא ניתן לקרוא את הקובץ', true);
+                }
+            });
+
+            $('fcClear').addEventListener('click', () => {
+                if (!confirm('לנקות את הקובץ שנטען?')) return;
+                geocodeRun++;
+                data = null;
+                try { localStorage.removeItem(DATA_STORE); } catch (e) {}
+                rebuildMarkers();
+                setStatus('');
+                renderAll();
+            });
+
+            $('fcChips').addEventListener('click', (e) => {
+                const chip = e.target.closest('.fc-chip');
+                if (!chip) return;
+                const next = new Set(hidden);
+                const s = chip.dataset.status;
+                if (next.has(s)) next.delete(s); else next.add(s);
+                setHidden(next);
+            });
+            $('fcAll').addEventListener('click', () => setHidden(new Set()));
+            $('fcNone').addEventListener('click', () => setHidden(new Set(data.rows.map(r => r.status))));
+
+            $('fcResults').addEventListener('click', (e) => {
+                const tr = e.target.closest('tr[data-i]');
+                if (!tr) return;
+                const i = Number(tr.dataset.i);
+                highlightRow(i);
+                const m = markers.get(i);
+                if (m && map) { map.setView(m.getLatLng(), Math.max(map.getZoom(), 15)); m.openPopup(); }
+            });
+
+            // "קומפס לנכס" בחלונית: ממלא את הכתובת בחלון Comps ועובר אליו
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-fc-comps]');
+                if (!btn) return;
+                const input = $('addressInput');
+                input.value = btn.dataset.fcComps;
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+                const nav = document.querySelector('#sideNav button[data-target="comps"]');
+                if (nav && getComputedStyle(nav).display !== 'none') nav.click();
+                else document.querySelector('.view-panel[data-view="comps"]').scrollIntoView({ behavior: 'smooth' });
+            });
+
+            document.addEventListener('gremson-view', (e) => {
+                if (e.detail === 'foreclosure' && map) setTimeout(() => { map.invalidateSize(); fitToMarkers(); }, 60);
+            });
+            window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
+
+            initMap();
+            rebuildMarkers();
+            renderAll();
+            if (data && data.rows.some(r => r.address && r.geo === undefined)) geocodeAll();
+            else fitToMarkers();
+        })();
+    </script>
+    <script>
         // תפריט צד (מחשב): חלון אחד בכל פעם. במובייל הכל נערם והתפריט מוסתר.
         (function initNav() {
             const panels = Array.from(document.querySelectorAll('.view-panel'));
@@ -2712,7 +3175,7 @@
                 const panel = panels.find(p => p.classList.contains('view-active'));
                 if (!panel) return;
                 // המפה לא עובדת טוב מתחת ל-zoom, לכן חלון Comps לא מוקטן
-                if (panel.dataset.view === 'comps') return;
+                if (panel.dataset.view === 'comps' || panel.dataset.view === 'foreclosure') return;
                 const needH = panel.scrollHeight, needW = panel.scrollWidth;
                 const haveH = main.clientHeight, haveW = main.clientWidth;
                 if (needH <= haveH && needW <= haveW) return;
@@ -2756,7 +3219,7 @@
     <script>
         // עדכון עצמי: בכל פתיחה/חזרה לדף בודקים מול האתר אם יצאה גרסה חדשה, ואם כן טוענים מחדש פעם אחת.
         (function selfUpdate() {
-            const BUILD_ID = '2026-10-26-b';
+            const BUILD_ID = '2026-10-26-c';
             async function check() {
                 try {
                     const res = await fetch(location.pathname + '?_=' + Date.now(), { cache: 'no-store' });
