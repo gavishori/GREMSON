@@ -2582,12 +2582,16 @@
             window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
 
             initMap();
-            // שחזור הנכס האחרון שנבחר
-            try {
-                const saved = JSON.parse(localStorage.getItem(SUBJECT_STORE) || 'null');
-                if (saved && !isNaN(saved.lat) && addressInput.value.trim()) placeSubject(saved, 16);
-            } catch (e) {}
-            updateExternalLinks();
+            // שחזור הנכס האחרון שנבחר (אחרי שהסקריפט של העסקה טען את הכתובת השמורה לשדה)
+            function restoreSubject() {
+                try {
+                    const saved = JSON.parse(localStorage.getItem(SUBJECT_STORE) || 'null');
+                    if (saved && !isNaN(saved.lat) && addressInput.value.trim()) placeSubject(saved, 16);
+                } catch (e) {}
+                updateExternalLinks();
+            }
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', restoreSubject);
+            else restoreSubject();
         })();
     </script>
     <script>
