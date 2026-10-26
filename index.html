@@ -458,6 +458,7 @@
 
         .comp-more { font-size: 0.85rem; }
         .comp-more summary { cursor: pointer; color: #cfe0ff; font-weight: 700; }
+        .comp-usage { margin-right: 8px; font-weight: 400; font-size: 0.78rem; color: #ffd166; }
         .comp-note { margin: 8px 0; color: #cfe0ff; line-height: 1.5; font-size: 0.8rem; }
         .comp-key-row { display: flex; gap: 8px; margin-bottom: 8px; }
 
@@ -1237,7 +1238,7 @@
                         <div id="compResults" class="comp-results"></div>
 
                         <details class="comp-more" id="compKeyBox">
-                            <summary>🔑 מפתח נתונים (RentCast)</summary>
+                            <summary>🔑 מפתח נתונים (RentCast) <span id="compUsage" class="comp-usage"></span></summary>
                             <p class="comp-note">קומפס אמיתי מבוסס על רשומות מכירה ציבוריות של נכסים באזור. השירות RentCast נותן מפתח חינמי (עד 50 בקשות בחודש; כל חיפוש הוא 2 בקשות). המפתח נשמר רק בדפדפן הזה ולא בקוד.</p>
                             <div class="comp-key-row">
                                 <input type="password" id="rentcastKey" placeholder="הדביקו כאן את מפתח ה-API" autocomplete="off">
@@ -2411,9 +2412,31 @@
                 statusEl.classList.toggle('err', !!isErr);
             }
 
+            // מונה בקשות מקומי: התוכנית החינמית היא 50 בקשות, ואחריהן כל בקשה עולה 0.20$.
+            // הספירה היא לפי החודש הקלנדרי בדפדפן הזה - המקור המדויק הוא לוח הבקרה של RentCast.
+            const FREE_LIMIT = 50, USAGE_STORE = 'rentcast-usage';
+            function usage() {
+                const now = new Date(), month = now.getFullYear() + '-' + now.getMonth();
+                let u = null;
+                try { u = JSON.parse(localStorage.getItem(USAGE_STORE) || 'null'); } catch (e) {}
+                return (u && u.m === month) ? u : { m: month, n: 0 };
+            }
+            function showUsage() {
+                const el = $('compUsage');
+                if (el) el.textContent = 'שימוש החודש: ' + usage().n + ' מתוך ' + FREE_LIMIT;
+            }
+            function countRequest() {
+                const u = usage(); u.n += 1;
+                try { localStorage.setItem(USAGE_STORE, JSON.stringify(u)); } catch (e) {}
+                showUsage();
+            }
+            showUsage();
+
             async function rc(path, params) {
                 const key = getKey();
                 if (!key) throw new Error('NO_KEY');
+                if (usage().n >= FREE_LIMIT && !window.confirm('נוצלו ' + usage().n + ' בקשות החודש, כלומר המכסה החינמית נגמרה. כל בקשה נוספת תחויב ב-$0.20. להמשיך?')) throw new Error('LIMIT');
+                countRequest();
                 const res = await fetch('https://api.rentcast.io/v1' + path + '?' + new URLSearchParams(params), { headers: { 'X-Api-Key': key, Accept: 'application/json' } });
                 if (res.status === 401 || res.status === 403) throw new Error('BAD_KEY');
                 if (res.status === 429) throw new Error('QUOTA');
@@ -2425,6 +2448,7 @@
                 if (e.message === 'NO_KEY') { $('compKeyBox').open = true; return 'כדי למצוא קומפס אמיתי צריך מפתח נתונים (חינמי) - הדביקו אותו בחלק "מפתח נתונים".'; }
                 if (e.message === 'BAD_KEY') return 'המפתח לא תקין או לא פעיל. בדקו אותו בחלק "מפתח נתונים".';
                 if (e.message === 'QUOTA') return 'נגמרה מכסת הבקשות החודשית של המפתח.';
+                if (e.message === 'LIMIT') return 'הפעולה בוטלה כדי לא לחרוג מהמכסה החינמית.';
                 return 'הבקשה נכשלה (' + e.message + '). נסו שוב בעוד רגע.';
             }
 
