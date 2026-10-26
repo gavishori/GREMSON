@@ -2240,6 +2240,7 @@
 
             // ---------- מפה ----------
             let map = null, subjectMarker = null, radiusCircle = null, compLayer = null;
+            let compMarkers = [];
             let subject = null; // { lat, lon, label, zip }
 
             function initMap() {
@@ -2517,7 +2518,7 @@
                     // סינון בשלבים - וסופרים כמה נשאר בכל שלב, כדי שאם אין תוצאות אפשר להבין למה
                     const all = Array.isArray(nearby) ? nearby : [];
                     const diag = { total: all.length };
-                    const sold = all.filter((p) => p.lastSaleDate && p.lastSalePrice > 1000);
+                    const sold = all.filter((p) => p.lastSaleDate && p.lastSalePrice >= MIN_SALE_PRICE);
                     diag.sold = sold.length;
                     const recent = sold.filter((p) => new Date(p.lastSaleDate) >= since);
                     diag.recent = recent.length;
@@ -2581,6 +2582,9 @@
                 } catch (e) { /* הגיבוי הוא רק ניסיון נוסף */ }
             }
 
+            // מכירות בסכומים סמליים (העברות בין קרובים, רישומים שגויים) הן לא קומפס אמיתי
+            const MIN_SALE_PRICE = 30000;
+
             function render(subj, comps, opt) {
                 compLayer.clearLayers();
                 const prices = comps.map((c) => c.lastSalePrice);
@@ -2605,6 +2609,7 @@
                     '</tbody></table>';
 
                 const markers = [];
+                compMarkers = markers;
                 comps.forEach((c, i) => {
                     if (c.latitude == null || c.longitude == null) return;
                     const m = L.circleMarker([c.latitude, c.longitude], { radius: 8, color: '#fff', weight: 2, fillColor: '#4f8cff', fillOpacity: 0.95 })
@@ -2621,8 +2626,15 @@
                 if (map && radiusCircle) map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] });
             }
 
+            // הבחירה בטבלה צובעת את העיגול המתאים במפה בירוק (שאר העיגולים חוזרים לכחול)
             function highlight(i) {
-                resultsEl.querySelectorAll('tbody tr').forEach((tr) => { tr.style.background = (parseInt(tr.dataset.i, 10) === i) ? 'rgba(255,209,102,.25)' : ''; });
+                resultsEl.querySelectorAll('tbody tr').forEach((tr) => { tr.style.background = (parseInt(tr.dataset.i, 10) === i) ? 'rgba(46,204,113,.3)' : ''; });
+                compMarkers.forEach((m, j) => {
+                    if (!m) return;
+                    const on = j === i;
+                    m.setStyle({ fillColor: on ? '#2ecc71' : '#4f8cff', radius: on ? 11 : 8, weight: on ? 3 : 2 });
+                    if (on) m.bringToFront();
+                });
                 const row = resultsEl.querySelector('tr[data-i="' + i + '"]');
                 if (row) row.scrollIntoView({ block: 'nearest' });
             }
@@ -2744,7 +2756,7 @@
     <script>
         // עדכון עצמי: בכל פתיחה/חזרה לדף בודקים מול האתר אם יצאה גרסה חדשה, ואם כן טוענים מחדש פעם אחת.
         (function selfUpdate() {
-            const BUILD_ID = '2026-10-26-a';
+            const BUILD_ID = '2026-10-26-b';
             async function check() {
                 try {
                     const res = await fetch(location.pathname + '?_=' + Date.now(), { cache: 'no-store' });
