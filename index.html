@@ -2501,11 +2501,20 @@
                     const subjType = subj && subj.propertyType;
                     const subjSqft = subj && subj.squareFootage;
 
-                    let comps = (Array.isArray(nearby) ? nearby : [])
-                        .filter((p) => p.lastSaleDate && p.lastSalePrice > 1000 && new Date(p.lastSaleDate) >= since)
-                        .filter((p) => !(subj && (p.id === subj.id || (p.formattedAddress || '') === (subj.formattedAddress || ''))))
-                        .filter((p) => !sameZip || !subjZip || String(p.zipCode) === String(subjZip))
-                        .filter((p) => !subjType || !p.propertyType || p.propertyType === subjType)
+                    // סינון בשלבים - וסופרים כמה נשאר בכל שלב, כדי שאם אין תוצאות אפשר להבין למה
+                    const all = Array.isArray(nearby) ? nearby : [];
+                    const diag = { total: all.length };
+                    const sold = all.filter((p) => p.lastSaleDate && p.lastSalePrice > 1000);
+                    diag.sold = sold.length;
+                    const recent = sold.filter((p) => new Date(p.lastSaleDate) >= since);
+                    diag.recent = recent.length;
+                    const notSubject = recent.filter((p) => !(subj && (p.id === subj.id || (p.formattedAddress || '') === (subj.formattedAddress || ''))));
+                    const zipOk = notSubject.filter((p) => !sameZip || !subjZip || String(p.zipCode) === String(subjZip));
+                    diag.zip = zipOk.length;
+                    const typeOk = zipOk.filter((p) => !subjType || !p.propertyType || p.propertyType === subjType);
+                    diag.type = typeOk.length;
+
+                    let comps = typeOk
                         .map((p) => {
                             const d = (p.latitude != null && p.longitude != null) ? miles(subject.lat, subject.lon, p.latitude, p.longitude) : null;
                             let cost = (d == null ? radius : d) / radius * 0.5;
@@ -2518,14 +2527,45 @@
                         .filter((p) => p._dist == null || p._dist <= radius)
                         .sort((a, b) => a._cost - b._cost)
                         .slice(0, 12);
+                    diag.final = comps.length;
 
                     render(subj, comps, { radius, months, subjSqft });
-                    setStatus(comps.length ? '' : 'לא נמצאו מכירות מתאימות בטווח הזה - נסו להגדיל רדיוס או תקופה.');
+
+                    if (comps.length) {
+                        setStatus('');
+                    } else {
+                        const msg = 'לא נמצאו מכירות מתאימות. פירוט: התקבלו ' + diag.total + ' נכסים מהאזור, ' + diag.sold + ' עם מכירה ידועה, ' +
+                            diag.recent + ' בתקופה שנבחרה, ' + diag.zip + ' אחרי סינון מיקוד, ' + diag.type + ' אחרי סוג נכס.';
+                        setStatus(msg + (subj ? '' : ' (הנכס עצמו לא נמצא ברשומות - בחרו כתובת עם מספר בית.)'), true);
+                        // גיבוי: הקומפס של RentCast עצמו (לפי מודעות שנסגרו) - בקשה אחת נוספת
+                        if (/^\d/.test(address)) await avmFallback(address);
+                    }
                 } catch (e) {
                     setStatus(e.message && e.message.length > 40 ? e.message : explain(e), true);
                 } finally {
                     searchBtn.disabled = false;
                 }
+            }
+
+            async function avmFallback(address) {
+                try {
+                    const r = await rc('/avm/value', { address: (subject && subject.label) || address, compCount: 10 });
+                    const list = Array.isArray(r.comparables) ? r.comparables : [];
+                    if (r.price != null) {
+                        summaryEl.insertAdjacentHTML('afterbegin', '<div class="comp-chip warm">הערכת שווי (RentCast)<strong>' + money(r.price) + '</strong></div><div class="comp-chip">טווח<strong>' + money(r.priceRangeLow) + ' - ' + money(r.priceRangeHigh) + '</strong></div>');
+                    }
+                    if (!list.length) return;
+                    resultsEl.innerHTML = '<table><thead><tr><th>כתובת (קומפס RentCast)</th><th>מחיר</th><th>סוג</th><th>חד׳</th><th>אמב׳</th><th>sqft</th><th>מייל</th><th>התאמה</th></tr></thead><tbody>' +
+                        list.map((c) => '<tr><td class="addr">' + esc(c.formattedAddress || c.addressLine1) + '</td><td class="num">' + money(c.price) + '</td><td>' + esc(c.listingType || c.status || '') + '</td><td>' + (c.bedrooms == null ? '—' : c.bedrooms) + '</td><td>' + (c.bathrooms == null ? '—' : c.bathrooms) + '</td><td class="num">' + num(c.squareFootage) + '</td><td class="num">' + (c.distance == null ? '—' : Number(c.distance).toFixed(2)) + '</td><td>' + (c.correlation == null ? '—' : Math.round(c.correlation * 100) + '%') + '</td></tr>').join('') +
+                        '</tbody></table>';
+                    compLayer.clearLayers();
+                    list.forEach((c) => {
+                        if (c.latitude == null || c.longitude == null) return;
+                        L.circleMarker([c.latitude, c.longitude], { radius: 8, color: '#fff', weight: 2, fillColor: '#ffc247', fillOpacity: 0.95 })
+                            .bindTooltip(money(c.price), { direction: 'top' }).addTo(compLayer);
+                    });
+                    statusEl.textContent += ' מוצגים במקום זה קומפס של RentCast עצמו.';
+                } catch (e) { /* הגיבוי הוא רק ניסיון נוסף */ }
             }
 
             function render(subj, comps, opt) {
