@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>GREMSON - מחשבון עסקה</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
     <style>
         * { box-sizing: border-box; }
 
@@ -354,6 +355,175 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 14px;
         }
+
+        /* ---- Comps: חיפוש כתובת עם השלמה אוטומטית, מפה, וקומפס אמיתי ---- */
+        .comps-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 16px;
+            align-items: start;
+        }
+
+        .comps-side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+
+        .comps-field label { display: block; font-weight: 700; margin-bottom: 4px; }
+
+        .ac-wrap { position: relative; }
+
+        #addressInput {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            color: #1e3c72;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            text-align: right;
+        }
+
+        .ac-list {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            z-index: 30;
+            margin: 0;
+            padding: 4px;
+            list-style: none;
+            max-height: 260px;
+            overflow-y: auto;
+            background: #14305f;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+        }
+
+        .ac-list[hidden] { display: none; }
+
+        .ac-list li {
+            padding: 9px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.92rem;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .ac-list li small { display: block; color: #9fb4dd; font-size: 0.75rem; }
+        .ac-list li:hover, .ac-list li.active { background: rgba(255, 255, 255, 0.16); }
+
+        .comps-opts { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 0.85rem; }
+
+        .comps-opts label { display: flex; align-items: center; gap: 6px; }
+
+        .comps-opts select {
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.95);
+            color: #1e3c72;
+            font-family: inherit;
+        }
+
+        .comps-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+        .comps-button.secondary { background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.28); }
+        .comps-button.secondary:hover { background: rgba(255, 255, 255, 0.26); }
+        .comps-button:disabled { opacity: 0.55; cursor: progress; }
+
+        .comp-status { min-height: 1.2em; font-size: 0.85rem; color: #ffd166; }
+        .comp-status.err { color: #ff8f8f; }
+
+        .comp-summary { display: flex; flex-wrap: wrap; gap: 8px; }
+
+        .comp-chip {
+            padding: 6px 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            font-size: 0.82rem;
+        }
+
+        .comp-chip strong { display: block; font-size: 1.05rem; color: #8bc34a; direction: ltr; text-align: right; }
+        .comp-chip.warm strong { color: #ffd166; }
+
+        .comp-results { max-height: 260px; overflow: auto; border-radius: 12px; }
+
+        .comp-results table { font-size: 0.8rem; }
+        .comp-results th, .comp-results td { padding: 6px 8px; white-space: nowrap; }
+        .comp-results tbody tr { cursor: pointer; }
+        .comp-results td.addr { white-space: normal; min-width: 130px; direction: ltr; text-align: left; }
+        .comp-results td.num { direction: ltr; text-align: right; }
+
+        .comp-more { font-size: 0.85rem; }
+        .comp-more summary { cursor: pointer; color: #cfe0ff; font-weight: 700; }
+        .comp-note { margin: 8px 0; color: #cfe0ff; line-height: 1.5; font-size: 0.8rem; }
+        .comp-key-row { display: flex; gap: 8px; margin-bottom: 8px; }
+
+        .comp-key-row input {
+            flex: 1 1 auto;
+            padding: 8px 10px;
+            border-radius: 9px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.95);
+            color: #1e3c72;
+            font-family: inherit;
+            direction: ltr;
+        }
+
+        .comp-ext-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+        .comp-link { color: #ffd166; font-size: 0.82rem; text-decoration: none; }
+        .comp-link:hover { text-decoration: underline; }
+
+        .comp-more textarea {
+            width: 100%;
+            padding: 8px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 10px;
+            resize: vertical;
+        }
+
+        .comps-map-wrap { position: relative; min-width: 0; }
+
+        #compMap {
+            width: 100%;
+            height: 100%;
+            min-height: 440px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .map-hint {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            z-index: 400;
+            padding: 3px 9px;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            color: #fff;
+            background: rgba(15, 31, 61, 0.78);
+            pointer-events: none;
+        }
+
+        .comp-pin {
+            font-size: 26px;
+            line-height: 1;
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+        }
+
+        @media (max-width: 820px) {
+            .comps-layout { grid-template-columns: minmax(0, 1fr); }
+            #compMap { min-height: 320px; height: 320px; }
+        }
+
         /* ---- מחשבון תשואה ---- */
         .yield-calc {
             flex-shrink: 0;
@@ -1030,21 +1200,73 @@
             </section>
 
             <section class="panel view-panel" data-view="comps">
-                <h2 class="sec-title">Comps</h2>
-<div class="comps-content-box">
-        <div class="comps-input-container">
-            <label for="addressInput">כתובת:</label>
-            <input type="text" id="addressInput" placeholder="הזן כתובת">
-        </div>
-        <div class="comps-question-container" style="margin-top: 10px;">
-            <label for="generatedPromptTextarea">השאלה ל-Gemini:</label>
-            <textarea id="generatedPromptTextarea" rows="5" cols="50" style="width: 100%; font-size: 0.8em; direction: rtl; text-align: right; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 5px; padding: 5px;" placeholder="השאלה המלאה ל-Gemini תופיע כאן..." readonly></textarea>
-        </div>
-        <div class="comps-button-container">
-            <button id="getCompsButton" class="comps-button">בצע</button>
-        </div>
-    </div>
-    
+                <h2 class="sec-title">Comps - קומפס אמיתי</h2>
+                <div class="comps-layout">
+                    <div class="comps-side">
+                        <div class="comps-field">
+                            <label for="addressInput">כתובת הנכס</label>
+                            <div class="ac-wrap">
+                                <input type="text" id="addressInput" placeholder="התחילו להקליד כתובת (ארה״ב)..." autocomplete="off" spellcheck="false">
+                                <ul id="acList" class="ac-list" hidden></ul>
+                            </div>
+                        </div>
+                        <div class="comps-opts">
+                            <label>רדיוס
+                                <select id="compRadius">
+                                    <option value="0.25">רבע מייל</option>
+                                    <option value="0.5" selected>חצי מייל</option>
+                                    <option value="1">מייל</option>
+                                </select>
+                            </label>
+                            <label>מכירות מה-
+                                <select id="compMonths">
+                                    <option value="3">3 חודשים</option>
+                                    <option value="6" selected>6 חודשים</option>
+                                    <option value="12">12 חודשים</option>
+                                </select>
+                            </label>
+                            <label class="chk"><input type="checkbox" id="compSameZip" checked> אותו מיקוד</label>
+                        </div>
+                        <div class="comps-actions">
+                            <button type="button" id="compSearchBtn" class="comps-button">🔍 חפש קומפס</button>
+                            <button type="button" id="compAvmBtn" class="comps-button secondary" title="הערכת שווי של RentCast (בקשה אחת)">💲 הערכת שווי</button>
+                            <button type="button" id="compRentBtn" class="comps-button secondary" title="הערכת שכירות של RentCast (בקשה אחת)">🏷️ שכירות</button>
+                        </div>
+                        <div id="compStatus" class="comp-status"></div>
+                        <div id="compSummary" class="comp-summary"></div>
+                        <div id="compResults" class="comp-results"></div>
+
+                        <details class="comp-more" id="compKeyBox">
+                            <summary>🔑 מפתח נתונים (RentCast)</summary>
+                            <p class="comp-note">קומפס אמיתי מבוסס על רשומות מכירה ציבוריות של נכסים באזור. השירות RentCast נותן מפתח חינמי (עד 50 בקשות בחודש; כל חיפוש הוא 2 בקשות). המפתח נשמר רק בדפדפן הזה ולא בקוד.</p>
+                            <div class="comp-key-row">
+                                <input type="password" id="rentcastKey" placeholder="הדביקו כאן את מפתח ה-API" autocomplete="off">
+                                <button type="button" id="rentcastKeySave" class="comps-button secondary">שמור</button>
+                            </div>
+                            <a class="comp-link" href="https://app.rentcast.io/app/api" target="_blank" rel="noopener">קבלת מפתח חינמי ב-RentCast ↗</a>
+                        </details>
+
+                        <details class="comp-more">
+                            <summary>חלופה בלי מפתח</summary>
+                            <div class="comp-ext-links">
+                                <a id="compZillow" class="comp-link" href="https://www.zillow.com/homes/recently_sold/" target="_blank" rel="noopener">נמכרו לאחרונה ב-Zillow ↗</a>
+                                <a id="compRedfin" class="comp-link" href="https://www.redfin.com/" target="_blank" rel="noopener">Redfin ↗</a>
+                                <a id="compMapsLink" class="comp-link" href="https://www.google.com/maps" target="_blank" rel="noopener">Google Maps ↗</a>
+                            </div>
+                            <div class="comps-question-container">
+                                <label for="generatedPromptTextarea">השאלה ל-Gemini:</label>
+                                <textarea id="generatedPromptTextarea" rows="4" placeholder="השאלה המלאה ל-Gemini תופיע כאן..." readonly></textarea>
+                            </div>
+                            <div class="comps-button-container">
+                                <button id="getCompsButton" class="comps-button secondary">שאל את Gemini</button>
+                            </div>
+                        </details>
+                    </div>
+                    <div class="comps-map-wrap">
+                        <div id="compMap" aria-label="מפה לבחירת כתובת"></div>
+                        <div class="map-hint">לחיצה על המפה בוחרת כתובת</div>
+                    </div>
+                </div>
             </section>
             <div class="yield-calc collapsed view-panel" id="yieldCalc" data-view="yield">
                 <h3 class="yield-header" role="button" tabindex="0" aria-expanded="false">
@@ -1985,6 +2207,389 @@
         })();
 
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script>
+        // ---- Comps אמיתי: השלמה אוטומטית לכתובות, מפה לבחירה, וקומפס ממכירות ציבוריות (RentCast) ----
+        (function initComps() {
+            const $ = (id) => document.getElementById(id);
+            const addressInput = $('addressInput');
+            const acList = $('acList');
+            const statusEl = $('compStatus');
+            const summaryEl = $('compSummary');
+            const resultsEl = $('compResults');
+            const searchBtn = $('compSearchBtn');
+            const keyInput = $('rentcastKey');
+            const KEY_STORE = 'rentcast-key';
+            const SUBJECT_STORE = 'comps-subject';
+
+            const STATES = {
+                Alabama: 'AL', Alaska: 'AK', Arizona: 'AZ', Arkansas: 'AR', California: 'CA', Colorado: 'CO', Connecticut: 'CT',
+                Delaware: 'DE', 'District of Columbia': 'DC', Florida: 'FL', Georgia: 'GA', Hawaii: 'HI', Idaho: 'ID', Illinois: 'IL',
+                Indiana: 'IN', Iowa: 'IA', Kansas: 'KS', Kentucky: 'KY', Louisiana: 'LA', Maine: 'ME', Maryland: 'MD',
+                Massachusetts: 'MA', Michigan: 'MI', Minnesota: 'MN', Mississippi: 'MS', Missouri: 'MO', Montana: 'MT',
+                Nebraska: 'NE', Nevada: 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ', 'New Mexico': 'NM', 'New York': 'NY',
+                'North Carolina': 'NC', 'North Dakota': 'ND', Ohio: 'OH', Oklahoma: 'OK', Oregon: 'OR', Pennsylvania: 'PA',
+                'Rhode Island': 'RI', 'South Carolina': 'SC', 'South Dakota': 'SD', Tennessee: 'TN', Texas: 'TX', Utah: 'UT',
+                Vermont: 'VT', Virginia: 'VA', Washington: 'WA', 'West Virginia': 'WV', Wisconsin: 'WI', Wyoming: 'WY'
+            };
+
+            const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            const money = (n) => (n == null || isNaN(n)) ? '—' : '$' + Math.round(n).toLocaleString('en-US');
+            const num = (n) => (n == null || isNaN(n)) ? '—' : Math.round(n).toLocaleString('en-US');
+
+            // ---------- מפה ----------
+            let map = null, subjectMarker = null, radiusCircle = null, compLayer = null;
+            let subject = null; // { lat, lon, label, zip }
+
+            function initMap() {
+                if (typeof L === 'undefined') {
+                    $('compMap').innerHTML = '<div style="padding:20px;color:#cfe0ff">לא ניתן לטעון את המפה</div>';
+                    return;
+                }
+                map = L.map('compMap', { zoomControl: true }).setView([39.5, -98.35], 4);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(map);
+                compLayer = L.layerGroup().addTo(map);
+                map.on('click', (e) => chooseOnMap(e.latlng.lat, e.latlng.lng));
+                window.__compMap = map;
+            }
+
+            function placeSubject(s, zoom) {
+                subject = s;
+                try { localStorage.setItem(SUBJECT_STORE, JSON.stringify(s)); } catch (e) {}
+                if (!map) return;
+                if (subjectMarker) map.removeLayer(subjectMarker);
+                subjectMarker = L.marker([s.lat, s.lon], {
+                    icon: L.divIcon({ className: '', html: '<div class="comp-pin">📍</div>', iconSize: [26, 26], iconAnchor: [13, 24] })
+                }).addTo(map);
+                map.setView([s.lat, s.lon], zoom || Math.max(map.getZoom(), 16));
+                compLayer.clearLayers();
+                if (radiusCircle) { map.removeLayer(radiusCircle); radiusCircle = null; }
+                drawRadius();
+                updateExternalLinks();
+            }
+
+            function drawRadius() {
+                if (!map || !subject) return;
+                if (radiusCircle) map.removeLayer(radiusCircle);
+                const miles = parseFloat($('compRadius').value) || 0.5;
+                radiusCircle = L.circle([subject.lat, subject.lon], { radius: miles * 1609.34, color: '#ffd166', weight: 2, fillOpacity: 0.05 }).addTo(map);
+            }
+
+            function updateExternalLinks() {
+                const q = encodeURIComponent((subject && subject.label) || addressInput.value || '');
+                $('compMapsLink').href = 'https://www.google.com/maps/search/?api=1&query=' + q;
+                $('compZillow').href = q ? 'https://www.zillow.com/homes/' + encodeURIComponent(((subject && subject.label) || addressInput.value).replace(/[,\s]+/g, '-')) + '_rb/' : 'https://www.zillow.com/homes/recently_sold/';
+                $('compRedfin').href = q ? 'https://www.redfin.com/?q=' + q : 'https://www.redfin.com/';
+            }
+
+            // ---------- גיאוקודינג והשלמה אוטומטית ----------
+            function labelFromNominatim(r) {
+                const a = r.address || {};
+                const street = [a.house_number, a.road].filter(Boolean).join(' ');
+                const city = a.city || a.town || a.village || a.hamlet || a.suburb || a.county || '';
+                const iso = (a['ISO3166-2-lvl4'] || '').split('-')[1] || STATES[a.state] || a.state || '';
+                const parts = [street, city, [iso, a.postcode].filter(Boolean).join(' ')].filter(Boolean);
+                return parts.join(', ');
+            }
+
+            async function nominatimSearch(q) {
+                const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&countrycodes=us&accept-language=en&q=' + encodeURIComponent(q);
+                const res = await fetch(url);
+                if (!res.ok) return [];
+                const data = await res.json();
+                return data.map((r) => ({ label: labelFromNominatim(r), lat: parseFloat(r.lat), lon: parseFloat(r.lon), zip: (r.address || {}).postcode || '', exact: !!(r.address && r.address.house_number) }));
+            }
+
+            async function photonSearch(q) {
+                const bias = map ? '&lat=' + map.getCenter().lat.toFixed(3) + '&lon=' + map.getCenter().lng.toFixed(3) : '';
+                const url = 'https://photon.komoot.io/api/?limit=6&lang=en&q=' + encodeURIComponent(q) + bias;
+                const res = await fetch(url);
+                if (!res.ok) return [];
+                const data = await res.json();
+                return (data.features || [])
+                    .filter((f) => (f.properties || {}).countrycode === 'US')
+                    .map((f) => {
+                        const p = f.properties;
+                        const street = [p.housenumber, p.street || p.name].filter(Boolean).join(' ');
+                        const parts = [street, p.city || p.county, [STATES[p.state] || p.state, p.postcode].filter(Boolean).join(' ')].filter(Boolean);
+                        return { label: parts.join(', '), lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], zip: p.postcode || '', exact: !!p.housenumber };
+                    });
+            }
+
+            async function suggest(q) {
+                const [a, b] = await Promise.allSettled([nominatimSearch(q), photonSearch(q)]);
+                const all = [].concat(a.status === 'fulfilled' ? a.value : [], b.status === 'fulfilled' ? b.value : []);
+                const seen = new Set();
+                return all.filter((r) => r.label && !isNaN(r.lat) && !seen.has(r.label.toLowerCase()) && seen.add(r.label.toLowerCase())).slice(0, 7);
+            }
+
+            let acTimer = null, acItems = [], acIndex = -1, acToken = 0;
+
+            function renderSuggestions() {
+                if (!acItems.length) { acList.hidden = true; return; }
+                acList.innerHTML = acItems.map((r, i) =>
+                    '<li data-i="' + i + '" class="' + (i === acIndex ? 'active' : '') + '">' + esc(r.label) + (r.exact ? '' : '<small>רחוב / אזור (ללא מספר בית)</small>') + '</li>'
+                ).join('');
+                acList.hidden = false;
+            }
+
+            function pick(i) {
+                const r = acItems[i];
+                if (!r) return;
+                addressInput.value = r.label;
+                try { localStorage.setItem(addressInput.id, r.label); } catch (e) {}
+                acList.hidden = true;
+                acItems = [];
+                placeSubject({ lat: r.lat, lon: r.lon, label: r.label, zip: r.zip || '' }, 17);
+                resultsEl.innerHTML = '';
+                summaryEl.innerHTML = '';
+                setStatus('');
+            }
+
+            addressInput.addEventListener('input', () => {
+                clearTimeout(acTimer);
+                const q = addressInput.value.trim();
+                if (q.length < 4) { acList.hidden = true; return; }
+                acTimer = setTimeout(async () => {
+                    const token = ++acToken;
+                    try {
+                        const items = await suggest(q);
+                        if (token !== acToken) return;
+                        acItems = items; acIndex = -1; renderSuggestions();
+                    } catch (e) { /* ההשלמה היא רק עזר */ }
+                }, 380);
+            });
+
+            addressInput.addEventListener('keydown', (e) => {
+                if (acList.hidden) { if (e.key === 'Enter') searchBtn.click(); return; }
+                if (e.key === 'ArrowDown') { e.preventDefault(); acIndex = Math.min(acItems.length - 1, acIndex + 1); renderSuggestions(); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); acIndex = Math.max(0, acIndex - 1); renderSuggestions(); }
+                else if (e.key === 'Enter') { e.preventDefault(); pick(acIndex >= 0 ? acIndex : 0); }
+                else if (e.key === 'Escape') { acList.hidden = true; }
+            });
+
+            acList.addEventListener('mousedown', (e) => {
+                const li = e.target.closest('li');
+                if (li) { e.preventDefault(); pick(parseInt(li.dataset.i, 10)); }
+            });
+
+            addressInput.addEventListener('blur', () => setTimeout(() => { acList.hidden = true; }, 150));
+
+            async function chooseOnMap(lat, lon) {
+                setStatus('מזהה כתובת במיקום שנבחר…');
+                placeSubject({ lat, lon, label: addressInput.value, zip: '' });
+                try {
+                    const res = await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&zoom=18&accept-language=en&lat=' + lat + '&lon=' + lon);
+                    const r = await res.json();
+                    const label = labelFromNominatim(r) || (lat.toFixed(5) + ', ' + lon.toFixed(5));
+                    addressInput.value = label;
+                    try { localStorage.setItem(addressInput.id, label); } catch (e) {}
+                    placeSubject({ lat, lon, label, zip: (r.address || {}).postcode || '' }, map.getZoom());
+                    resultsEl.innerHTML = ''; summaryEl.innerHTML = '';
+                    setStatus('');
+                } catch (e) {
+                    setStatus('לא הצלחתי לזהות כתובת במיקום הזה - אפשר להקליד ידנית.', true);
+                }
+            }
+
+            // ---------- RentCast ----------
+            function getKey() {
+                return (keyInput.value.trim()) || (function () { try { return localStorage.getItem(KEY_STORE) || ''; } catch (e) { return ''; } })();
+            }
+
+            try { keyInput.value = localStorage.getItem(KEY_STORE) || ''; } catch (e) {}
+            $('rentcastKeySave').addEventListener('click', () => {
+                try { localStorage.setItem(KEY_STORE, keyInput.value.trim()); } catch (e) {}
+                setStatus(keyInput.value.trim() ? 'המפתח נשמר בדפדפן הזה.' : 'המפתח נמחק.');
+            });
+
+            function setStatus(msg, isErr) {
+                statusEl.textContent = msg || '';
+                statusEl.classList.toggle('err', !!isErr);
+            }
+
+            async function rc(path, params) {
+                const key = getKey();
+                if (!key) throw new Error('NO_KEY');
+                const res = await fetch('https://api.rentcast.io/v1' + path + '?' + new URLSearchParams(params), { headers: { 'X-Api-Key': key, Accept: 'application/json' } });
+                if (res.status === 401 || res.status === 403) throw new Error('BAD_KEY');
+                if (res.status === 429) throw new Error('QUOTA');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            }
+
+            function explain(e) {
+                if (e.message === 'NO_KEY') { $('compKeyBox').open = true; return 'כדי למצוא קומפס אמיתי צריך מפתח נתונים (חינמי) - הדביקו אותו בחלק "מפתח נתונים".'; }
+                if (e.message === 'BAD_KEY') return 'המפתח לא תקין או לא פעיל. בדקו אותו בחלק "מפתח נתונים".';
+                if (e.message === 'QUOTA') return 'נגמרה מכסת הבקשות החודשית של המפתח.';
+                return 'הבקשה נכשלה (' + e.message + '). נסו שוב בעוד רגע.';
+            }
+
+            const toRad = (d) => d * Math.PI / 180;
+            function miles(lat1, lon1, lat2, lon2) {
+                const R = 3958.8, dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+                const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+                return 2 * R * Math.asin(Math.sqrt(a));
+            }
+
+            const median = (arr) => {
+                const a = arr.filter((x) => x != null && !isNaN(x)).sort((x, y) => x - y);
+                if (!a.length) return null;
+                const m = Math.floor(a.length / 2);
+                return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+            };
+
+            async function ensureSubjectCoords() {
+                if (subject && !isNaN(subject.lat)) return;
+                const found = await suggest(addressInput.value.trim());
+                if (!found.length) throw new Error('לא נמצאה הכתובת - בחרו מהרשימה או מהמפה.');
+                const f = found[0];
+                placeSubject({ lat: f.lat, lon: f.lon, label: f.label, zip: f.zip || '' }, 17);
+            }
+
+            async function loadSubjectRecord() {
+                const rows = await rc('/properties', { address: subject.label || addressInput.value.trim() });
+                return Array.isArray(rows) && rows.length ? rows[0] : null;
+            }
+
+            async function runSearch() {
+                const address = addressInput.value.trim();
+                if (!address) { setStatus('הקלידו כתובת או בחרו במפה.', true); return; }
+                searchBtn.disabled = true;
+                summaryEl.innerHTML = ''; resultsEl.innerHTML = '';
+                try {
+                    if (!getKey()) throw new Error('NO_KEY');
+                    setStatus('מאתר את הנכס…');
+                    await ensureSubjectCoords();
+                    const radius = parseFloat($('compRadius').value) || 0.5;
+                    const months = parseInt($('compMonths').value, 10) || 6;
+                    const sameZip = $('compSameZip').checked;
+
+                    const subj = await loadSubjectRecord();
+                    setStatus('מחפש מכירות באזור…');
+                    const nearby = await rc('/properties', { latitude: subject.lat, longitude: subject.lon, radius: radius, limit: 500 });
+
+                    const since = new Date(); since.setMonth(since.getMonth() - months);
+                    const subjZip = (subj && subj.zipCode) || subject.zip || '';
+                    const subjType = subj && subj.propertyType;
+                    const subjSqft = subj && subj.squareFootage;
+
+                    let comps = (Array.isArray(nearby) ? nearby : [])
+                        .filter((p) => p.lastSaleDate && p.lastSalePrice > 1000 && new Date(p.lastSaleDate) >= since)
+                        .filter((p) => !(subj && (p.id === subj.id || (p.formattedAddress || '') === (subj.formattedAddress || ''))))
+                        .filter((p) => !sameZip || !subjZip || String(p.zipCode) === String(subjZip))
+                        .filter((p) => !subjType || !p.propertyType || p.propertyType === subjType)
+                        .map((p) => {
+                            const d = (p.latitude != null && p.longitude != null) ? miles(subject.lat, subject.lon, p.latitude, p.longitude) : null;
+                            let cost = (d == null ? radius : d) / radius * 0.5;
+                            if (subj && subj.bedrooms != null && p.bedrooms != null) cost += Math.abs(subj.bedrooms - p.bedrooms) * 0.3;
+                            if (subj && subj.bathrooms != null && p.bathrooms != null) cost += Math.abs(subj.bathrooms - p.bathrooms) * 0.2;
+                            if (subjSqft && p.squareFootage) cost += Math.abs(subjSqft - p.squareFootage) / subjSqft * 2;
+                            if (subj && subj.yearBuilt && p.yearBuilt) cost += Math.min(1, Math.abs(subj.yearBuilt - p.yearBuilt) / 40) * 0.5;
+                            return Object.assign({}, p, { _dist: d, _cost: cost, _ppsf: p.squareFootage ? p.lastSalePrice / p.squareFootage : null });
+                        })
+                        .filter((p) => p._dist == null || p._dist <= radius)
+                        .sort((a, b) => a._cost - b._cost)
+                        .slice(0, 12);
+
+                    render(subj, comps, { radius, months, subjSqft });
+                    setStatus(comps.length ? '' : 'לא נמצאו מכירות מתאימות בטווח הזה - נסו להגדיל רדיוס או תקופה.');
+                } catch (e) {
+                    setStatus(e.message && e.message.length > 40 ? e.message : explain(e), true);
+                } finally {
+                    searchBtn.disabled = false;
+                }
+            }
+
+            function render(subj, comps, opt) {
+                compLayer.clearLayers();
+                const prices = comps.map((c) => c.lastSalePrice);
+                const medPrice = median(prices);
+                const medPpsf = median(comps.map((c) => c._ppsf));
+                const est = (medPpsf && opt.subjSqft) ? medPpsf * opt.subjSqft : null;
+
+                const chips = [];
+                if (subj) {
+                    const bits = [subj.bedrooms != null ? subj.bedrooms + ' חד׳' : '', subj.bathrooms != null ? subj.bathrooms + ' אמב׳' : '', subj.squareFootage ? num(subj.squareFootage) + ' sqft' : '', subj.yearBuilt ? 'נבנה ' + subj.yearBuilt : ''].filter(Boolean).join(' · ');
+                    chips.push('<div class="comp-chip">הנכס שנבחר<strong style="color:#fff;font-size:.85rem">' + esc(bits || 'אין נתוני נכס ברשומות') + '</strong></div>');
+                }
+                chips.push('<div class="comp-chip">מכירות שנמצאו<strong>' + comps.length + '</strong></div>');
+                chips.push('<div class="comp-chip">חציון מחיר<strong>' + money(medPrice) + '</strong></div>');
+                chips.push('<div class="comp-chip">חציון $/sqft<strong>' + money(medPpsf) + '</strong></div>');
+                if (est) chips.push('<div class="comp-chip warm">שווי משוער (ARV)<strong>' + money(est) + '</strong></div>');
+                summaryEl.innerHTML = chips.join('');
+
+                if (!comps.length) { resultsEl.innerHTML = ''; return; }
+                resultsEl.innerHTML = '<table><thead><tr><th>כתובת</th><th>נמכר</th><th>מחיר</th><th>חד׳</th><th>אמב׳</th><th>sqft</th><th>$/sqft</th><th>מייל</th></tr></thead><tbody>' +
+                    comps.map((c, i) => '<tr data-i="' + i + '"><td class="addr">' + esc(c.addressLine1 || c.formattedAddress) + '</td><td>' + esc(String(c.lastSaleDate).slice(0, 10)) + '</td><td class="num">' + money(c.lastSalePrice) + '</td><td>' + (c.bedrooms == null ? '—' : c.bedrooms) + '</td><td>' + (c.bathrooms == null ? '—' : c.bathrooms) + '</td><td class="num">' + num(c.squareFootage) + '</td><td class="num">' + money(c._ppsf) + '</td><td class="num">' + (c._dist == null ? '—' : c._dist.toFixed(2)) + '</td></tr>').join('') +
+                    '</tbody></table>';
+
+                const markers = [];
+                comps.forEach((c, i) => {
+                    if (c.latitude == null || c.longitude == null) return;
+                    const m = L.circleMarker([c.latitude, c.longitude], { radius: 8, color: '#fff', weight: 2, fillColor: '#4f8cff', fillOpacity: 0.95 })
+                        .bindTooltip(money(c.lastSalePrice) + ' · ' + String(c.lastSaleDate).slice(0, 10), { direction: 'top' })
+                        .addTo(compLayer);
+                    m.on('click', () => highlight(i));
+                    markers[i] = m;
+                });
+                resultsEl.querySelectorAll('tbody tr').forEach((tr) => tr.addEventListener('click', () => {
+                    const i = parseInt(tr.dataset.i, 10);
+                    highlight(i);
+                    if (markers[i]) { map.panTo(markers[i].getLatLng()); markers[i].openTooltip(); }
+                }));
+                if (map && radiusCircle) map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] });
+            }
+
+            function highlight(i) {
+                resultsEl.querySelectorAll('tbody tr').forEach((tr) => { tr.style.background = (parseInt(tr.dataset.i, 10) === i) ? 'rgba(255,209,102,.25)' : ''; });
+                const row = resultsEl.querySelector('tr[data-i="' + i + '"]');
+                if (row) row.scrollIntoView({ block: 'nearest' });
+            }
+
+            async function avm(kind) {
+                const address = addressInput.value.trim();
+                if (!address) { setStatus('הקלידו כתובת או בחרו במפה.', true); return; }
+                try {
+                    if (!getKey()) throw new Error('NO_KEY');
+                    setStatus(kind === 'value' ? 'מחשב הערכת שווי…' : 'מחשב הערכת שכירות…');
+                    const path = kind === 'value' ? '/avm/value' : '/avm/rent/long-term';
+                    const r = await rc(path, { address: (subject && subject.label) || address, compCount: 8 });
+                    const chips = [
+                        '<div class="comp-chip warm">' + (kind === 'value' ? 'הערכת שווי' : 'שכירות חודשית משוערת') + '<strong>' + money(r.price != null ? r.price : r.rent) + '</strong></div>',
+                        '<div class="comp-chip">טווח<strong>' + money(r.priceRangeLow != null ? r.priceRangeLow : r.rentRangeLow) + ' - ' + money(r.priceRangeHigh != null ? r.priceRangeHigh : r.rentRangeHigh) + '</strong></div>'
+                    ];
+                    summaryEl.insertAdjacentHTML('afterbegin', chips.join(''));
+                    setStatus('');
+                } catch (e) {
+                    setStatus(e.message && e.message.length > 40 ? e.message : explain(e), true);
+                }
+            }
+
+            searchBtn.addEventListener('click', runSearch);
+            $('compAvmBtn').addEventListener('click', () => avm('value'));
+            $('compRentBtn').addEventListener('click', () => avm('rent'));
+            $('compRadius').addEventListener('change', drawRadius);
+            addressInput.addEventListener('change', updateExternalLinks);
+
+            // כשהחלון (במחשב) נפתח - המפה צריכה לחשב מחדש את גודלה
+            document.addEventListener('gremson-view', (e) => {
+                if (e.detail === 'comps' && map) setTimeout(() => map.invalidateSize(), 60);
+            });
+            window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
+
+            initMap();
+            // שחזור הנכס האחרון שנבחר
+            try {
+                const saved = JSON.parse(localStorage.getItem(SUBJECT_STORE) || 'null');
+                if (saved && !isNaN(saved.lat) && addressInput.value.trim()) placeSubject(saved, 16);
+            } catch (e) {}
+            updateExternalLinks();
+        })();
+    </script>
     <script>
         // תפריט צד (מחשב): חלון אחד בכל פעם. במובייל הכל נערם והתפריט מוסתר.
         (function initNav() {
@@ -1997,6 +2602,7 @@
                 panels.forEach(p => p.classList.toggle('view-active', p.dataset.view === view));
                 buttons.forEach(b => b.classList.toggle('active', b.dataset.target === view));
                 try { localStorage.setItem(KEY, view); } catch (e) {}
+                document.dispatchEvent(new CustomEvent('gremson-view', { detail: view }));
             }
 
             // התאמה למסך: מקטינים את החלון הפעיל (אף פעם לא מגדילים) כך שייכנס בלי גלילה
@@ -2011,6 +2617,8 @@
                 if (!desktop.matches) return;
                 const panel = panels.find(p => p.classList.contains('view-active'));
                 if (!panel) return;
+                // המפה לא עובדת טוב מתחת ל-zoom, לכן חלון Comps לא מוקטן
+                if (panel.dataset.view === 'comps') return;
                 const needH = panel.scrollHeight, needW = panel.scrollWidth;
                 const haveH = main.clientHeight, haveW = main.clientWidth;
                 if (needH <= haveH && needW <= haveW) return;
