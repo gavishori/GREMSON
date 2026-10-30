@@ -1129,8 +1129,8 @@
             <button type="button" class="nav-item" data-target="deal"><span class="nav-ico">🏢</span><span class="nav-label">כדאיות עסקה ומימון</span></button>
             <button type="button" class="nav-item" data-target="comps"><span class="nav-ico">📍</span><span class="nav-label">Comps</span></button>
             <button type="button" class="nav-item" data-target="foreclosure"><span class="nav-ico">🏚️</span><span class="nav-label">Foreclosure</span></button>
-            <button type="button" class="nav-item" data-target="yield"><span class="nav-ico">💰</span><span class="nav-label">מחשבון תשואה</span></button>
-            <button type="button" class="nav-item" data-target="invest"><span class="nav-ico">🏗️</span><span class="nav-label">מחשבון השקעה</span></button>
+            <button type="button" class="nav-item" data-target="yield"><span class="nav-ico">💰</span><span class="nav-label">תשואה דירת השקעה</span></button>
+            <button type="button" class="nav-item" data-target="invest"><span class="nav-ico">🏗️</span><span class="nav-label">מחשבון Jacksonville</span></button>
 
             <div class="nav-group">קישורים</div>
             <a class="nav-item" href="https://gengine.co/home" target="_blank" rel="noopener"><span class="nav-ico">🔗</span><span class="nav-label">גרמסונית</span></a>
@@ -1472,7 +1472,7 @@
             </section>
             <div class="yield-calc collapsed view-panel" id="yieldCalc" data-view="yield">
                 <h3 class="yield-header" role="button" tabindex="0" aria-expanded="false">
-                    <span><span class="col-arrow">▸</span> 💰 מחשבון תשואה</span>
+                    <span><span class="col-arrow">▸</span> 💰 תשואה דירת השקעה</span>
                 </h3>
                 <div class="yield-body">
                 <div class="yield-field">
@@ -1499,7 +1499,7 @@
 
             <div class="yield-calc collapsed view-panel" id="investCalc" data-view="invest">
                 <h3 class="yield-header" role="button" tabindex="0" aria-expanded="false">
-                    <span><span class="col-arrow">▸</span> 🏗️ מחשבון השקעה</span>
+                    <span><span class="col-arrow">▸</span> 🏗️ מחשבון Jacksonville</span>
                 </h3>
                 <div class="yield-body">
                 <div class="invest-layout">
@@ -3523,7 +3523,7 @@
     <script>
         // עדכון עצמי: בכל פתיחה/חזרה לדף בודקים מול האתר אם יצאה גרסה חדשה, ואם כן טוענים מחדש פעם אחת.
         (function selfUpdate() {
-            const BUILD_ID = '2026-10-26-e';
+            const BUILD_ID = '2026-10-30-a';
             async function check() {
                 try {
                     const res = await fetch(location.pathname + '?_=' + Date.now(), { cache: 'no-store' });
