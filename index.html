@@ -88,6 +88,11 @@
             border-radius: 12px;
         }
 
+        /* תפריט קומפקטי: המחשבונים ברשימה נפתחת (במובייל, במסכי מגע, ובכל מסך שהכפתורים לא נכנסים בו) */
+        .side-nav.nav-compact .nav-select { display: block; }
+
+        .side-nav.nav-compact button.nav-item, .side-nav.nav-compact .nav-group-calc { display: none; }
+
         .nav-group {
             margin: 14px 6px 4px;
             padding-top: 10px;
@@ -1085,8 +1090,6 @@
 
             .side-nav .nav-item, .side-nav .nav-group { display: none; }
 
-            .nav-select { display: block; }
-
             .view-panel:not(.view-active) { display: none; }
 
             .yield-calc.view-active { margin-top: 0; }
@@ -1155,7 +1158,7 @@
 
             <select id="navSelect" class="nav-select" aria-label="בחירת חלון"></select>
 
-            <div class="nav-group">חישובים</div>
+            <div class="nav-group nav-group-calc">חישובים</div>
             <button type="button" class="nav-item" data-target="deal"><span class="nav-ico">🏢</span><span class="nav-label">כדאיות עסקה ומימון</span></button>
             <button type="button" class="nav-item" data-target="comps"><span class="nav-ico">📍</span><span class="nav-label">Comps</span></button>
             <button type="button" class="nav-item" data-target="foreclosure"><span class="nav-ico">🏚️</span><span class="nav-label">Foreclosure</span></button>
@@ -3493,6 +3496,15 @@
                 navSelect.add(new Option(label, b.dataset.target));
             });
 
+            const sideNav = document.getElementById('sideNav');
+            const compactScreen = window.matchMedia('(max-width: 1100px), (max-height: 500px), (pointer: coarse)');
+
+            function updateNavMode() {
+                sideNav.classList.remove('nav-compact');
+                const overflow = sideNav.scrollHeight > sideNav.clientHeight + 1;
+                sideNav.classList.toggle('nav-compact', compactScreen.matches || overflow);
+            }
+
             function show(view) {
                 if (!panels.some(p => p.dataset.view === view)) view = 'deal';
                 panels.forEach(p => p.classList.toggle('view-active', p.dataset.view === view));
@@ -3536,7 +3548,10 @@
             window.__fitGremson = fit;
 
             buttons.forEach(b => b.addEventListener('click', () => { show(b.dataset.target); queueFit(); }));
-            navSelect.addEventListener('change', () => show(navSelect.value));
+            navSelect.addEventListener('change', () => { show(navSelect.value); queueFit(); });
+            updateNavMode();
+            window.addEventListener('resize', updateNavMode);
+            window.addEventListener('load', updateNavMode);
 
             let initial = 'deal';
             try { initial = localStorage.getItem(KEY) || 'deal'; } catch (e) {}
@@ -3551,7 +3566,7 @@
     <script>
         // עדכון עצמי: בכל פתיחה/חזרה לדף בודקים מול האתר אם יצאה גרסה חדשה, ואם כן טוענים מחדש פעם אחת.
         (function selfUpdate() {
-            const BUILD_ID = '2026-10-31-a';
+            const BUILD_ID = '2026-10-31-b';
             async function check() {
                 try {
                     const res = await fetch(location.pathname + '?_=' + Date.now(), { cache: 'no-store' });
