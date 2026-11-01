@@ -75,23 +75,26 @@
             font-weight: 700;
         }
 
-        .nav-select {
+        /* כותרת פתיחה/סגירה של כל חלון - מוצגת רק במובייל */
+        .acc-head {
             display: none;
+            align-items: center;
+            gap: 10px;
             width: 100%;
-            margin-top: 10px;
-            padding: 10px 12px;
+            padding: 13px 14px;
             font-family: inherit;
+            font-size: 1rem;
             font-weight: 700;
             color: #fff;
-            background: #14305f;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
+            background: none;
+            border: none;
+            border-radius: inherit;
+            cursor: pointer;
         }
 
-        /* תפריט קומפקטי: המחשבונים ברשימה נפתחת (במובייל, במסכי מגע, ובכל מסך שהכפתורים לא נכנסים בו) */
-        .side-nav.nav-compact .nav-select { display: block; }
+        .acc-head .nav-label { flex: 1; text-align: right; }
 
-        .side-nav.nav-compact button.nav-item, .side-nav.nav-compact .nav-group-calc { display: none; }
+        .acc-head .acc-arrow { color: #cfe0ff; font-size: 1.3rem; line-height: 1; }
 
         .nav-group {
             margin: 14px 6px 4px;
@@ -539,7 +542,7 @@
             filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
         }
 
-        @media (max-width: 820px), (max-height: 500px) {
+        @media (max-width: 1100px), (max-height: 500px), (pointer: coarse) {
             .comps-layout { grid-template-columns: minmax(0, 1fr); }
             #compMap { min-height: 320px; height: 320px; }
         }
@@ -702,7 +705,7 @@
         .fc-pop .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
         .fc-pop .links a, .fc-pop .links button { color: #1e5bd8; font: inherit; font-size: 0.78rem; background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; }
 
-        @media (max-width: 820px), (max-height: 500px) {
+        @media (max-width: 1100px), (max-height: 500px), (pointer: coarse) {
             .fc-layout { grid-template-columns: minmax(0, 1fr); }
             #fcMap { min-height: 340px; height: 340px; }
             .fc-results { max-height: 420px; }
@@ -916,7 +919,7 @@
         }
 
 
-        @media (min-width: 821px) and (min-height: 501px) {
+        @media (min-width: 1101px) and (min-height: 501px) and (pointer: fine) {
             .yield-calc.view-active .yield-body,
             .yield-calc.collapsed.view-active .yield-body {
                 display: block;
@@ -1045,7 +1048,7 @@
 
 
         /* ---- תצוגת מחשב: חלון אחד בכל פעם על כל המסך ---- */
-        @media (min-width: 821px) and (min-height: 501px) {
+        @media (min-width: 1101px) and (min-height: 501px) and (pointer: fine) {
             html, body { height: 100%; overflow: hidden; }
 
             .shell { height: 100vh; }
@@ -1082,23 +1085,29 @@
             .main .footer-links { display: none; }
         }
 
-        /* ---- מובייל: הכותרת והשעונים למעלה, רשימה נפתחת לבחירת חלון, וחלון אחד בכל פעם ---- */
-        @media (max-width: 820px), (max-height: 500px) {
+        /* ---- מובייל: הכותרת והשעונים למעלה, וכל החלונות ככותרות שנפתחות בחץ (סגורות כברירת מחדל) ---- */
+        @media (max-width: 1100px), (max-height: 500px), (pointer: coarse) {
             .shell { flex-direction: column; padding: 12px; gap: 12px; }
 
             .side-nav { flex: 0 0 auto; width: 100%; padding: 12px; }
 
             .side-nav .nav-item, .side-nav .nav-group { display: none; }
 
-            .view-panel:not(.view-active) { display: none; }
+            .main { width: 100%; }
 
-            .yield-calc.view-active { margin-top: 0; }
+            .acc-head { display: flex; }
 
-            .yield-calc.view-active .col-arrow { display: none; }
+            .view-panel { margin: 0 0 8px; padding: 0; }
 
-            .yield-calc.view-active .yield-header { pointer-events: none; }
+            .view-panel.acc-open { padding: 0 14px 14px; }
 
-            .yield-calc.view-active.collapsed .yield-body { display: block; }
+            .view-panel.acc-open > .acc-head { width: calc(100% + 28px); margin: 0 -14px; }
+
+            .view-panel:not(.acc-open) > :not(.acc-head) { display: none; }
+
+            .view-panel > .sec-title, .view-panel > .yield-header { display: none; }
+
+            .yield-calc.collapsed.acc-open .yield-body { display: block; margin-top: 0; }
 
             .clocks { flex-direction: row; justify-content: space-between; margin-bottom: 0; }
 
@@ -1156,9 +1165,7 @@
                 <div class="online-clock"><span class="clock-label">שעון מזרח ארה"ב</span><span id="easternTimeDisplay" class="clock-time"></span></div>
             </div>
 
-            <select id="navSelect" class="nav-select" aria-label="בחירת חלון"></select>
-
-            <div class="nav-group nav-group-calc">חישובים</div>
+            <div class="nav-group">חישובים</div>
             <button type="button" class="nav-item" data-target="deal"><span class="nav-ico">🏢</span><span class="nav-label">כדאיות עסקה ומימון</span></button>
             <button type="button" class="nav-item" data-target="comps"><span class="nav-ico">📍</span><span class="nav-label">Comps</span></button>
             <button type="button" class="nav-item" data-target="foreclosure"><span class="nav-ico">🏚️</span><span class="nav-label">Foreclosure</span></button>
@@ -3484,39 +3491,53 @@
         })();
     </script>
     <script>
-        // תפריט: חלון אחד בכל פעם. במחשב תפריט צד, במובייל רשימה נפתחת שנבנית מאותם כפתורים.
+        // במחשב: תפריט צד וחלון אחד בכל פעם. במובייל: כל החלונות ככותרות עם חץ, סגורות כברירת מחדל.
         (function initNav() {
             const panels = Array.from(document.querySelectorAll('.view-panel'));
             const buttons = Array.from(document.querySelectorAll('#sideNav button[data-target]'));
-            const navSelect = document.getElementById('navSelect');
             const KEY = 'gremson-view';
 
-            buttons.forEach(b => {
-                const label = b.querySelector('.nav-ico').textContent + ' ' + b.querySelector('.nav-label').textContent;
-                navSelect.add(new Option(label, b.dataset.target));
+            const mobile = window.matchMedia('(max-width: 1100px), (max-height: 500px), (pointer: coarse)');
+
+            function setOpen(panel, open) {
+                const head = panel.querySelector(':scope > .acc-head');
+                panel.classList.toggle('acc-open', open);
+                head.setAttribute('aria-expanded', String(open));
+                head.querySelector('.acc-arrow').textContent = open ? '▾' : '◂';
+                // מפה שנפתחת צריכה לחשב מחדש את גודלה
+                if (open) document.dispatchEvent(new CustomEvent('gremson-view', { detail: panel.dataset.view }));
+            }
+
+            panels.forEach(panel => {
+                const btn = buttons.find(b => b.dataset.target === panel.dataset.view);
+                const head = document.createElement('button');
+                head.type = 'button';
+                head.className = 'acc-head';
+                head.innerHTML = btn.innerHTML + '<span class="acc-arrow" aria-hidden="true">◂</span>';
+                head.setAttribute('aria-expanded', 'false');
+                head.addEventListener('click', () => setOpen(panel, !panel.classList.contains('acc-open')));
+                panel.insertBefore(head, panel.firstChild);
             });
 
-            const sideNav = document.getElementById('sideNav');
-            const compactScreen = window.matchMedia('(max-width: 1100px), (max-height: 500px), (pointer: coarse)');
-
-            function updateNavMode() {
-                sideNav.classList.remove('nav-compact');
-                const overflow = sideNav.scrollHeight > sideNav.clientHeight + 1;
-                sideNav.classList.toggle('nav-compact', compactScreen.matches || overflow);
+            // מעבר לחלון מסוים במובייל (קישור עמוק או "קומפס לנכס"): פותחים אותו וגוללים אליו
+            function revealOnMobile(view) {
+                const panel = panels.find(p => p.dataset.view === view);
+                if (!panel || !mobile.matches) return;
+                setOpen(panel, true);
+                setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
             }
 
             function show(view) {
                 if (!panels.some(p => p.dataset.view === view)) view = 'deal';
                 panels.forEach(p => p.classList.toggle('view-active', p.dataset.view === view));
                 buttons.forEach(b => b.classList.toggle('active', b.dataset.target === view));
-                navSelect.value = view;
                 try { localStorage.setItem(KEY, view); } catch (e) {}
                 document.dispatchEvent(new CustomEvent('gremson-view', { detail: view }));
             }
 
             // התאמה למסך: מקטינים את החלון הפעיל (אף פעם לא מגדילים) כך שייכנס בלי גלילה
             const main = document.querySelector('.main');
-            const desktop = window.matchMedia('(min-width: 821px) and (min-height: 501px)');
+            const desktop = window.matchMedia('(min-width: 1101px) and (min-height: 501px) and (pointer: fine)');
             const MIN_SCALE = 0.55;
             let fitQueued = false;
 
@@ -3547,11 +3568,7 @@
             window.addEventListener('load', queueFit);
             window.__fitGremson = fit;
 
-            buttons.forEach(b => b.addEventListener('click', () => { show(b.dataset.target); queueFit(); }));
-            navSelect.addEventListener('change', () => { show(navSelect.value); queueFit(); });
-            updateNavMode();
-            window.addEventListener('resize', updateNavMode);
-            window.addEventListener('load', updateNavMode);
+            buttons.forEach(b => b.addEventListener('click', () => { show(b.dataset.target); revealOnMobile(b.dataset.target); queueFit(); }));
 
             let initial = 'deal';
             try { initial = localStorage.getItem(KEY) || 'deal'; } catch (e) {}
@@ -3560,13 +3577,14 @@
             if (fromHash) initial = hashView;
             show(initial);
             queueFit();
+            if (fromHash) revealOnMobile(hashView);
 
         })();
     </script>
     <script>
         // עדכון עצמי: בכל פתיחה/חזרה לדף בודקים מול האתר אם יצאה גרסה חדשה, ואם כן טוענים מחדש פעם אחת.
         (function selfUpdate() {
-            const BUILD_ID = '2026-10-31-b';
+            const BUILD_ID = '2026-11-01-a';
             async function check() {
                 try {
                     const res = await fetch(location.pathname + '?_=' + Date.now(), { cache: 'no-store' });
